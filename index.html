@@ -153,6 +153,14 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxGjUmpz3yBSJpfZ9fvZsg8
 let currentUser 
 // Au chargement de la page, on vérifie si un utilisateur est déjà connecté
 window.addEventListener('DOMContentLoaded', () => {
+    // Injection de la fonction renderBalanceOnly si elle manque
+    window.renderBalanceOnly = function() {
+        const el = document.getElementById('display-balance');
+        if (el && currentUser) {
+            el.innerText = `${currentUser.balance.toLocaleString()} FCFA`;
+        }
+    };
+
     const savedUser = localStorage.getItem('jeldem_session');
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
@@ -180,6 +188,13 @@ function switchTab(tabId) {
     });
     event.currentTarget.classList.add('bg-green-50', 'text-green-600');
     event.currentTarget.classList.remove('text-gray-400');
+}
+
+function renderBalanceOnly() {
+    const el = document.getElementById('display-balance');
+    if (el && currentUser) {
+        el.innerText = `${currentUser.balance.toLocaleString()} FCFA`;
+    }
 }
 
 async function login() {
@@ -288,9 +303,9 @@ function showDashboard() {
     renderBalanceOnly();
 
     // Remplissage du Profil
-    document.getElementById('prof-name').innerText = currentUser.name; // On utilise le name/phone
-    document.getElementById('prof-phone').innerText = currentUser.name;
-    const rfidCode = `JD-${currentUser.name.substring(0,3)}-${currentUser.name.substring(6,9)}`;
+    document.getElementById('prof-name').innerText = currentUser.name;
+    document.getElementById('prof-phone').innerText = currentUser.phone;
+    const rfidCode = `JD-${currentUser.phone.substring(0,3)}-${currentUser.phone.substring(currentUser.phone.length - 3)}`;
     document.getElementById('prof-rfid').innerText = rfidCode;
 
     // Calcul des statistiques
@@ -301,7 +316,7 @@ function showDashboard() {
 
     // Génération du QR Code via API externe
     const qrArea = document.getElementById('qr-code-display');
-    const qrData = encodeURIComponent(`JELDEM:${currentUser.name}`);
+    const qrData = encodeURIComponent(`JELDEM:${currentUser.phone}`);
     qrArea.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${qrData}" class="w-full h-full">`;
     
     // Simulation d'un ID RFID
