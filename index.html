@@ -110,6 +110,9 @@
                     <div><p class="text-[10px] text-gray-400 uppercase font-bold">Téléphone</p><p id="prof-phone" class="font-bold text-sm">--</p></div>
                     <div><p class="text-[10px] text-gray-400 uppercase font-bold">ID RFID Unique</p><p id="prof-rfid" class="font-mono text-xs text-orange-600">--</p></div>
                 </div>
+                <button onclick="requestRfid()" class="mt-4 w-full bg-green-100 text-green-700 text-[10px] font-bold p-2 rounded-xl uppercase tracking-tighter">
+                    <i class="fas fa-plus-circle mr-1"></i> Lier une nouvelle carte RFID
+                </button>
             </div>
 
             <!-- Statistiques d'Achat -->
@@ -125,14 +128,31 @@
             </div>
 
             <!-- Changement de mot de passe -->
-            <div class="glass p-6 rounded-3xl text-left">
-                <h3 class="font-bold mb-4 text-gray-800 flex items-center gap-2">
-                    <i class="fas fa-shield-alt text-orange-500"></i>
-                    Sécurité
+            <!-- Centre de Sécurité & Face ID -->
+            <div class="glass p-6 rounded-3xl text-left space-y-4">
+                <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-shield-halved text-orange-500"></i>
+                    Sécurité & Biométrie
                 </h3>
-                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Nouveau Code Secret</label>
-                <input type="password" id="new-password" placeholder="Nouveau code PIN" class="w-full bg-gray-100 p-4 rounded-2xl mt-2 mb-4 outline-none">
-                <button onclick="updatePassword()" class="w-full bg-gray-800 text-white font-bold p-4 rounded-2xl">ENREGISTRER</button>
+                
+                <div id="face-id-status" class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-orange-500 shadow-sm">
+                            <i class="fas fa-face-smile"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Face ID</p>
+                            <p class="text-xs font-bold" id="face-status-text">Non configuré</p>
+                        </div>
+                    </div>
+                    <button onclick="setupFaceID()" class="text-[10px] font-black text-orange-600 bg-orange-100 px-3 py-2 rounded-lg uppercase">Configurer</button>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Changer le Code PIN</label>
+                    <input type="password" id="new-password" placeholder="Nouveau code PIN" class="w-full bg-gray-100 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 transition-all">
+                    <button onclick="updatePassword()" class="w-full bg-gray-800 text-white font-bold p-4 rounded-2xl shadow-lg">METTRE À JOUR</button>
+                </div>
             </div>
             
             <button onclick="location.reload()" class="w-full text-red-500 font-bold text-xs uppercase tracking-widest pt-4">Se déconnecter</button>
@@ -316,7 +336,10 @@ function showDashboard() {
 
     // Génération du QR Code via API externe
     const qrArea = document.getElementById('qr-code-display');
-    const qrData = encodeURIComponent(`JELDEM:${currentUser.phone}`);
+    // URL de profil pour que le scan montre les infos de la personne
+    const profileUrl = window.location.href.split('?')[0] + "?view_profile=" + currentUser.phone;
+    const qrData = encodeURIComponent(profileUrl);
+    
     qrArea.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${qrData}" class="w-full h-full">`;
     
     // Simulation d'un ID RFID
@@ -335,6 +358,16 @@ function showDashboard() {
             <p class="text-red-500 font-black text-sm">-${t.montant} F</p>
         </div>
     `).join('');
+}
+
+async function requestRfid() {
+    const rfidUid = prompt("Veuillez scanner ou saisir l'ID de votre carte RFID :");
+    if (!rfidUid) return;
+    
+    const payload = { action: "assignRfid", payload: { phone: currentUser.phone, rfidUid: rfidUid } };
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+    alert("Carte RFID liée avec succès !");
+    location.reload();
 }
     </script>
 </body>
