@@ -273,7 +273,7 @@ async function login() {
 function logout() {
     if(confirm("Voulez-vous vous déconnecter ?")) {
         localStorage.removeItem('jeldem_session');
-        location.reload();
+        w.location.reload();
     }
 }
 
@@ -334,11 +334,11 @@ async function updatePassword() {
 }
 
 async function recharge(amount) {
-    if(!confirm(`Confirmer le dépôt de ${amount} FCFA via Wave (PayDunya) ?`)) return;
+    if(!confirm(`Vous allez être redirigé vers PayDunya pour un dépôt de ${amount} FCFA. Continuer ?`)) return;
     
     const payload = {
         action: "initiatePayDunya",
-        payload: { phone: currentUser.phone, amount: amount, provider: 'wave' }
+        payload: { phone: currentUser.phone, amount: amount }
     };
     
     const res = await fetch(API_URL, { 
@@ -348,11 +348,11 @@ async function recharge(amount) {
     });
     const data = await res.json();
 
-    if(data.success) {
-        alert(`✅ Succès PayDunya : +${amount} FCFA crédités sur votre compte JEL DEM`);
-        currentUser.balance = data.newBalance;
-        localStorage.setItem('jeldem_session', JSON.stringify(currentUser));
-        renderBalanceOnly();
+    if(data.success && data.url) {
+        // Redirection vers la page de paiement PayDunya
+        window.location.href = data.url;
+    } else {
+        alert("Erreur PayDunya : " + (data.message || "Impossible d'initier le paiement"));
     }
 }
 
