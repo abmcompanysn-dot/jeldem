@@ -32,7 +32,7 @@
         </div>
 
         <!-- Formulaire Connexion -->
-        <div id="form-login" class="space-y-4">
+        <form id="form-login" class="space-y-4" onsubmit="event.preventDefault(); login();">
             <div class="text-left">
                 <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Téléphone</label>
                 <input type="tel" id="user-phone" placeholder="77 000 00 00" class="w-full bg-gray-100 border-none p-4 rounded-2xl text-lg focus:ring-2 focus:ring-orange-500 outline-none">
@@ -41,17 +41,17 @@
                 <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Code PIN / Passe</label>
                 <input type="password" id="user-password-login" placeholder="••••" class="w-full bg-gray-100 border-none p-4 rounded-2xl text-lg focus:ring-2 focus:ring-orange-500 outline-none">
             </div>
-            <button onclick="login()" class="w-full btn-orange font-bold p-4 rounded-2xl shadow-lg mt-4 uppercase tracking-widest text-sm">Se Connecter</button>
-        </div>
+            <button type="submit" class="w-full btn-orange font-bold p-4 rounded-2xl shadow-lg mt-4 uppercase tracking-widest text-sm">Se Connecter</button>
+        </form>
 
         <!-- Formulaire Inscription -->
-        <div id="form-register" class="hidden space-y-3">
+        <form id="form-register" class="hidden space-y-3" onsubmit="event.preventDefault(); register();">
             <input type="text" id="reg-name" placeholder="Nom complet" class="w-full bg-gray-100 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-500">
             <input type="tel" id="reg-phone" placeholder="Numéro de téléphone" class="w-full bg-gray-100 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-500">
             <input type="email" id="reg-email" placeholder="Email (Reçus)" class="w-full bg-gray-100 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-500">
             <input type="password" id="reg-password" placeholder="Créer un Code PIN" class="w-full bg-gray-100 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-500">
-            <button onclick="register()" class="w-full bg-green-500 text-white font-bold p-4 rounded-2xl shadow-lg mt-2 uppercase tracking-widest text-sm">Créer mon compte</button>
-        </div>
+            <button type="submit" class="w-full bg-green-500 text-white font-bold p-4 rounded-2xl shadow-lg mt-2 uppercase tracking-widest text-sm">Créer mon compte</button>
+        </form>
     </div>
 
     <!-- Section Dashboard (Cachée par défaut) -->
@@ -137,7 +137,7 @@
                 
                 <div id="face-id-status" class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-orange-500 shadow-sm">
+                        <div id="face-icon-box" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-orange-500 shadow-sm">
                             <i class="fas fa-face-smile"></i>
                         </div>
                         <div>
@@ -145,14 +145,14 @@
                             <p class="text-xs font-bold" id="face-status-text">Non configuré</p>
                         </div>
                     </div>
-                    <button onclick="setupFaceID()" class="text-[10px] font-black text-orange-600 bg-orange-100 px-3 py-2 rounded-lg uppercase">Configurer</button>
+                    <button id="face-setup-btn" onclick="setupFaceID()" class="text-[10px] font-black text-orange-600 bg-orange-100 px-3 py-2 rounded-lg uppercase">Configurer</button>
                 </div>
 
-                <div class="space-y-2">
+                <form class="space-y-2" onsubmit="event.preventDefault(); updatePassword();">
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Changer le Code PIN</label>
                     <input type="password" id="new-password" placeholder="Nouveau code PIN" class="w-full bg-gray-100 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 transition-all">
-                    <button onclick="updatePassword()" class="w-full bg-gray-800 text-white font-bold p-4 rounded-2xl shadow-lg">METTRE À JOUR</button>
-                </div>
+                    <button type="submit" class="w-full bg-gray-800 text-white font-bold p-4 rounded-2xl shadow-lg">METTRE À JOUR</button>
+                </form>
             </div>
             
             <button onclick="logout()" class="w-full text-red-500 font-bold text-xs uppercase tracking-widest pt-4">Se déconnecter</button>
@@ -248,7 +248,8 @@ async function login() {
         // Envoi en mode 'no-cors' ou simple texte pour éviter le blocage CORS Google
         const res = await fetch(API_URL, { 
             method: 'POST', 
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            redirect: 'follow'
         });
         const data = await res.json();
         
@@ -268,14 +269,6 @@ async function login() {
 function logout() {
     if(confirm("Voulez-vous vous déconnecter ?")) {
         localStorage.removeItem('jeldem_session');
-        location.reload();
-    }
-}
-
-function logout() {
-    if(confirm("Voulez-vous vous déconnecter ?")) {
-        localStorage.removeItem('jeldem_session');
-        currentUser = null;
         location.reload();
     }
 }
@@ -377,8 +370,10 @@ function showDashboard() {
 
     faceStatusText.innerText = isFaceActive ? "ACTIVÉ & SÉCURISÉ" : "NON CONFIGURÉ";
     faceStatusText.className = isFaceActive ? "text-xs font-black text-green-600" : "text-xs font-black text-gray-500";
-    faceIconBox.className = isFaceActive ? "w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shadow-sm text-green-600" : "w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-400";
-    if(isFaceActive) faceBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Prêt';
+    if (faceIconBox) {
+        faceIconBox.className = isFaceActive ? "w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shadow-sm text-green-600" : "w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-400";
+    }
+    if(isFaceActive && faceBtn) faceBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Prêt';
 
     // Calcul des statistiques
     const totalSpent = currentUser.transactions.reduce((acc, t) => acc + t.montant, 0);
@@ -388,8 +383,9 @@ function showDashboard() {
 
     // Génération du QR Code via API externe
     const qrArea = document.getElementById('qr-code-display');
-    // URL de profil pour que le scan montre les infos de la personne
-    const profileUrl = window.location.href.split('?')[0] + "?view_profile=" + currentUser.phone;
+    // Utilisation de l'URL propre du site
+    const baseUrl = window.location.origin + window.location.pathname;
+    const profileUrl = baseUrl + "?view_profile=" + currentUser.phone;
     const qrData = encodeURIComponent(profileUrl);
     
     qrArea.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${qrData}" class="w-full h-full">`;
