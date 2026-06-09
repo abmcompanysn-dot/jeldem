@@ -3,109 +3,943 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DALL JAMM - Hub Intelligente</title>
+    <title>JEL DEM - Super App</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="config.js"></script>
     <style>
-        body { 
-            background-image: linear-gradient(rgba(10, 10, 12, 0.9), rgba(10, 10, 12, 0.9)), url('https://i.postimg.cc/Cx0pYgC2/photo-de-espcae-tudiant-africain.jpg');
-            background-size: cover; background-attachment: fixed; color: #fff; 
-        }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .neon-border { border: 1px solid #00f2ff; box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
-        .card-hover:hover { transform: translateY(-5px); transition: 0.3s; border-color: #00f2ff; }
+        body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1a1a1a; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
+        .bg-dall-green { background-color: #22c55e; }
+        .border-dall-green { border-color: #22c55e; }
+        .text-dall-orange { color: #f97316; }
+        .btn-orange { background-color: #f97316; color: white; transition: all 0.2s; }
+        .btn-orange:hover { background-color: #ea580c; transform: translateY(-1px); }
+        .card-balance { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #f97316; border-radius: 50%; width: 18px; height: 18px; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-left: 8px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .status-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 5px #22c55e; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6">
-    
-    <div class="max-w-4xl w-full text-center mb-12">
-        <h1 class="text-5xl font-black tracking-tighter mb-2">DALL <span class="text-cyan-400">JAMM</span></h1>
-        <p class="text-gray-400">Vision Artificielle & Commerce Autonome</p>
-        
-        <div class="mt-8 flex justify-center items-center gap-4">
-            <input id="serverIp" type="text" placeholder="IP du Serveur (ex: 192.168.1.11)" 
-                   class="bg-gray-900 border border-gray-700 px-4 py-2 rounded-lg text-sm w-64 focus:outline-none focus:border-cyan-500">
-            <button onclick="saveIp()" class="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-lg text-sm font-bold transition">CONNECTER</button>
+<body class="p-4 max-w-md mx-auto bg-gray-50 min-h-screen">
+    <header class="flex justify-between items-center mb-8 pt-4">
+        <h1 class="text-2xl font-extrabold tracking-tighter text-gray-900">JEL <span class="text-dall-orange">DEM</span></h1>
+        <div class="flex items-center gap-2">
+            <div id="connection-indicator" class="hidden text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full"><span class="status-dot"></span> LIVE</div>
+            <div id="user-initials" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">?</div>
+        </div>
+    </header>
+
+    <!-- Section Login/Inscription -->
+    <div id="auth-section" class="glass rounded-3xl p-6 mb-6 border-t-4 border-orange-500 shadow-xl">
+        <div class="flex gap-4 mb-6 border-b border-gray-100 pb-2">
+            <button onclick="toggleAuthMode('login')" id="tab-login-btn" class="font-bold text-sm text-orange-500 border-b-2 border-orange-500 pb-2">CONNEXION</button>
+            <button onclick="toggleAuthMode('register')" id="tab-reg-btn" class="font-bold text-sm text-gray-400 pb-2">INSCRIPTION</button>
+        </div>
+
+        <!-- Formulaire Connexion -->
+        <form id="form-login" class="space-y-4" onsubmit="event.preventDefault(); login();">
+            <div class="text-left">
+                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Téléphone</label>
+                <input type="tel" id="user-phone" placeholder="77 000 00 00" class="w-full bg-gray-100 border-none p-4 rounded-2xl text-lg focus:ring-2 focus:ring-orange-500 outline-none">
+            </div>
+            <div class="text-left">
+                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Code PIN / Passe</label>
+                <input type="password" id="user-password-login" placeholder="••••" class="w-full bg-gray-100 border-none p-4 rounded-2xl text-lg focus:ring-2 focus:ring-orange-500 outline-none">
+            </div>
+            <button type="submit" id="login-btn" class="w-full btn-orange font-bold p-4 rounded-2xl shadow-lg mt-4 uppercase tracking-widest text-sm">Se Connecter <span id="login-loader" class="hidden"><span class="loader"></span></span></button>
+        </form>
+
+        <!-- Formulaire Inscription -->
+        <form id="form-register" class="hidden space-y-3" onsubmit="event.preventDefault(); register();">
+            <input type="text" id="reg-name" placeholder="Nom complet" class="w-full bg-gray-100 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-500">
+            <input type="tel" id="reg-phone" placeholder="Numéro de téléphone" class="w-full bg-gray-100 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-500">
+            <input type="email" id="reg-email" placeholder="Email (Reçus)" class="w-full bg-gray-100 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-500">
+            <input type="password" id="reg-password" placeholder="Créer un Code PIN" class="w-full bg-gray-100 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-500">
+            <button type="submit" class="w-full bg-green-500 text-white font-bold p-4 rounded-2xl shadow-lg mt-2 uppercase tracking-widest text-sm">Créer mon compte</button>
+        </form>
+    </div>
+
+    <!-- Section Dashboard (Cachée par défaut) -->
+    <div id="dashboard" class="hidden">
+        <!-- ONGLET 1: IDENTIFICATION (QR & RFID) -->
+        <div id="tab-id" class="tab-content">
+            <div class="glass rounded-3xl p-6 mb-6 text-center border-b-4 border-dall-green">
+                <div id="entry-status" class="inline-block px-3 py-1 rounded-full bg-gray-100 text-[10px] font-bold text-gray-400 mb-4 uppercase tracking-widest">
+                    En attente d'entrée
+                </div>
+                <div class="bg-white p-4 rounded-2xl inline-block mb-4 shadow-inner border border-gray-100">
+                    <div id="qr-code-display" class="w-40 h-40 flex items-center justify-center"></div>
+                </div>
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <i class="fas fa-microchip text-xl text-green-600"></i>
+                    <p class="font-bold text-sm tracking-tight" id="rfid-id">RFID: --- --- ---</p>
+                </div>
+                <p class="text-[10px] text-gray-400">Scannez pour entrer</p>
+            </div>
+        </div>
+
+        <!-- ONGLET 2: FACTURES (HISTORIQUE) -->
+        <div id="tab-factures" class="tab-content hidden">
+            <!-- Suggestions IA Groq -->
+            <div id="suggestions-card" class="hidden glass rounded-3xl p-4 mb-4 border-l-4 border-orange-400">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fas fa-magic text-orange-500 text-sm"></i>
+                    <h4 class="font-bold text-xs text-gray-600 uppercase tracking-widest">Suggestions IA</h4>
+                    <span id="suggestions-loader" class="hidden"><span class="loader"></span></span>
+                </div>
+                <p id="suggestions-reason" class="text-[10px] text-gray-400 mb-3 italic"></p>
+                <div id="suggestions-list" class="flex gap-2 flex-wrap"></div>
+            </div>
+            <h3 class="font-bold mb-4 px-2 text-gray-700 uppercase text-xs tracking-widest">Mes Factures Récentes</h3>
+            <div id="transactions-list" class="space-y-3 mb-8"></div>
+        </div>
+
+        <!-- ONGLET 3: PAIEMENT (SOLDE & RECHARGE) -->
+        <div id="tab-paiement" class="tab-content hidden">
+            <div class="card-balance rounded-3xl p-8 mb-6 shadow-xl relative overflow-hidden">
+                <div class="relative z-10 flex justify-between items-start">
+                    <div>
+                        <p class="text-white/80 font-bold text-xs uppercase tracking-widest mb-1">Solde JEL DEM</p>
+                        <h3 class="text-4xl font-black" id="display-balance">0 FCFA</h3>
+                    </div>
+                    <button onclick="refreshUserData(true)" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-all text-white" title="Rafraîchir">
+                        <i id="refresh-icon" class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-3xl mb-8">
+                <h4 class="font-bold mb-4 text-sm text-gray-600 uppercase">Recharge Rapide</h4>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="recharge(2000)" class="bg-gray-100 p-3 rounded-xl font-bold text-sm">2000</button>
+                    <button onclick="recharge(5000)" class="bg-orange-500 text-white p-3 rounded-xl font-bold text-sm">5000</button>
+                    <button onclick="recharge(10000)" class="bg-gray-100 p-3 rounded-xl font-bold text-sm">10000</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 4: RÉGLAGES (SÉCURITÉ) -->
+        <div id="tab-settings" class="tab-content hidden space-y-4">
+            <!-- Informations Personnelles -->
+            <div class="glass p-6 rounded-3xl text-left">
+                <h3 class="font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-user-circle text-green-600"></i>
+                    Infos Personnelles
+                </h3>
+                <div class="space-y-3">
+                    <div><p class="text-[10px] text-gray-400 uppercase font-bold">Nom Complet</p><p id="prof-name" class="font-bold text-sm">--</p></div>
+                    <div><p class="text-[10px] text-gray-400 uppercase font-bold">Téléphone</p><p id="prof-phone" class="font-bold text-sm">--</p></div>
+                    <div><p class="text-[10px] text-gray-400 uppercase font-bold">ID RFID Unique</p><p id="prof-rfid" class="font-mono text-xs text-orange-600">--</p></div>
+                </div>
+                <button onclick="requestRfid()" class="mt-4 w-full bg-green-100 text-green-700 text-[10px] font-bold p-2 rounded-xl uppercase tracking-tighter">
+                    <i class="fas fa-plus-circle mr-1"></i> Lier une nouvelle carte RFID
+                </button>
+            </div>
+
+            <!-- Statistiques d'Achat -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+                    <p class="text-[9px] text-gray-400 uppercase font-bold">Total Dépensé</p>
+                    <p id="stat-total" class="text-xl font-black text-green-600">0 F</p>
+                </div>
+                <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+                    <p class="text-[9px] text-gray-400 uppercase font-bold">Articles</p>
+                    <p id="stat-count" class="text-xl font-black text-orange-500">0</p>
+                </div>
+            </div>
+
+            <!-- Clé API Groq pour les suggestions -->
+            <div class="glass p-4 rounded-3xl text-left">
+                <h3 class="font-bold text-gray-800 flex items-center gap-2 mb-3">
+                    <i class="fas fa-magic text-orange-500"></i>
+                    Suggestions IA (Groq)
+                </h3>
+                <input type="password" id="groq-key-input" placeholder="Clé API Groq (optionnel)"
+                    class="w-full bg-gray-100 p-3 rounded-2xl outline-none text-xs focus:ring-2 focus:ring-orange-500 mb-2">
+                <button onclick="saveGroqKey()" class="w-full bg-orange-100 text-orange-700 text-[10px] font-bold p-2 rounded-xl uppercase">
+                    Enregistrer la clé
+                </button>
+            </div>
+
+            <!-- Centre de Sécurité & Face ID -->
+            <div class="glass p-6 rounded-3xl text-left space-y-4">
+                <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-shield-halved text-orange-500"></i>
+                    Sécurité & Biométrie
+                </h3>
+                
+                <div id="face-id-status" class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div id="face-icon-box" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-orange-500 shadow-sm">
+                            <i class="fas fa-face-smile"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Face ID</p>
+                            <p class="text-xs font-bold" id="face-status-text">Non configuré</p>
+                        </div>
+                    </div>
+                    <button id="face-setup-btn" onclick="setupFaceID()" class="text-[10px] font-black text-orange-600 bg-orange-100 px-3 py-2 rounded-lg uppercase">Configurer</button>
+                </div>
+
+                <form class="space-y-2" onsubmit="event.preventDefault(); updatePassword();">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Changer le Code PIN</label>
+                    <input type="password" id="new-password" placeholder="Nouveau code PIN" class="w-full bg-gray-100 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 transition-all">
+                    <button type="submit" class="w-full bg-gray-800 text-white font-bold p-4 rounded-2xl shadow-lg">METTRE À JOUR</button>
+                </form>
+            </div>
+            
+            <button onclick="logout()" class="w-full text-red-500 font-bold text-xs uppercase tracking-widest pt-4">Se déconnecter</button>
+        </div>
+
+        <!-- ONGLET 5: CHAT IA JEL DEM -->
+        <div id="tab-chat" class="tab-content hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-sm">
+                        <i class="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-gray-900">Assistant JEL DEM</h3>
+                        <p class="text-[10px] text-gray-400" id="ai-status">Groq · Llama 4 Scout Vision</p>
+                    </div>
+                </div>
+                <button onclick="aiHistory=[];document.getElementById('ai-messages').innerHTML='';initAiChat()"
+                    class="text-[10px] text-gray-400 hover:text-orange-500 font-bold uppercase tracking-wider">
+                    <i class="fas fa-rotate-right mr-1"></i>Reset
+                </button>
+            </div>
+
+            <!-- Bandeau config clé Groq -->
+            <div id="ai-config-banner" class="hidden glass rounded-2xl p-4 mb-3 border-l-4 border-orange-400">
+                <p class="text-xs font-bold text-orange-600 mb-2">Clé Groq requise pour activer l'IA</p>
+                <div class="flex gap-2">
+                    <input type="password" id="ai-groq-key" placeholder="gsk_..."
+                        class="flex-1 bg-gray-100 text-xs p-3 rounded-xl outline-none focus:ring-2 focus:ring-orange-500">
+                    <button onclick="saveAiKey()" class="btn-orange text-xs px-4 py-2 rounded-xl font-bold">OK</button>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-2">Clé gratuite sur <b>console.groq.com</b> → API Keys</p>
+            </div>
+
+            <!-- Zone messages -->
+            <div id="ai-messages" class="space-y-4 overflow-y-auto mb-3"
+                 style="height: calc(100vh - 400px); min-height: 220px;"></div>
+
+            <!-- Aperçu image avant envoi -->
+            <div id="ai-img-preview" class="hidden mb-2">
+                <div class="relative inline-block">
+                    <img id="ai-img-thumb" class="h-16 w-16 object-cover rounded-xl border-2 border-orange-300 shadow-sm">
+                    <button onclick="clearAiImage()"
+                        class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center shadow">✕</button>
+                </div>
+                <span class="text-[10px] text-orange-500 font-bold ml-2">Image prête à envoyer</span>
+            </div>
+
+            <!-- Barre d'input -->
+            <div class="glass flex items-center gap-2 p-2 rounded-2xl">
+                <label for="ai-img-input"
+                    class="w-9 h-9 rounded-xl bg-gray-100 hover:bg-orange-100 text-gray-400 hover:text-orange-500 flex items-center justify-center cursor-pointer flex-shrink-0 transition-all"
+                    title="Envoyer une image">
+                    <i class="fas fa-camera text-sm"></i>
+                </label>
+                <input type="file" id="ai-img-input" accept="image/*" capture="environment"
+                    class="hidden" onchange="previewAiImage(event)">
+
+                <input id="ai-input" type="text" placeholder="Posez votre question..."
+                    class="flex-1 bg-transparent text-sm px-2 py-2 outline-none"
+                    onkeydown="if(event.key==='Enter') sendAiMsg()">
+
+                <button onclick="sendAiMsg()" id="ai-send-btn"
+                    class="btn-orange w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-paper-plane text-xs"></i>
+                </button>
+            </div>
+            <p class="text-center text-[9px] text-gray-300 mt-2 mb-24">Conversations sauvegardées · Vision activée</p>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
-        
-        <!-- Admin Card -->
-        <a href="#" onclick="openModule('/admin')" class="glass p-8 rounded-2xl card-hover text-left">
-            <div class="text-cyan-400 text-3xl mb-4"><i class="fas fa-shield-halved"></i></div>
-            <h3 class="text-xl font-bold mb-2">Control Room</h3>
-            <p class="text-sm text-gray-500">Accès Admin, surveillance multi-caméras et export de données CSV.</p>
-        </a>
-
-        <!-- Mobile Cam -->
-        <a href="#" onclick="openModule('/mobile')" class="glass p-8 rounded-2xl card-hover text-left border-cyan-900">
-            <div class="text-cyan-400 text-3xl mb-4"><i class="fas fa-mobile-screen-button"></i></div>
-            <h3 class="text-xl font-bold mb-2">Mobile Camera</h3>
-            <p class="text-sm text-gray-500">Transformer ce smartphone en capteur IA pour le magasin.</p>
-        </a>
-
-        <!-- Wallet -->
-        <a href="#" onclick="openModule('/client')" class="glass p-8 rounded-2xl card-hover text-left">
-            <div class="text-cyan-400 text-3xl mb-4"><i class="fas fa-wallet"></i></div>
-            <h3 class="text-xl font-bold mb-2">Client Wallet</h3>
-            <p class="text-sm text-gray-500">Consulter le solde, l'historique des achats et le profil.</p>
-        </a>
-
-        <!-- Manager -->
-        <a href="#" onclick="openModule('/manager')" class="glass p-8 rounded-2xl card-hover text-left">
-            <div class="text-orange-500 text-3xl mb-4"><i class="fas fa-boxes-stacked"></i></div>
-            <h3 class="text-xl font-bold mb-2">Inventory Manager</h3>
-            <p class="text-sm text-gray-500">Gestion des stocks, prix et enregistrement 360° des produits.</p>
-        </a>
-
-        <!-- Registration -->
-        <a href="#" onclick="openModule('/register')" class="glass p-8 rounded-2xl card-hover text-left">
-            <div class="text-purple-500 text-3xl mb-4"><i class="fas fa-user-plus"></i></div>
-            <h3 class="text-xl font-bold mb-2">Face ID Setup</h3>
-            <p class="text-sm text-gray-500">Inscription biométrique multi-poses pour les nouveaux clients.</p>
-        </a>
-
-        <!-- API Docs -->
-        <a href="#" onclick="openModule('/docs')" class="glass p-8 rounded-2xl card-hover text-left opacity-50">
-            <div class="text-gray-400 text-3xl mb-4"><i class="fas fa-code"></i></div>
-            <h3 class="text-xl font-bold mb-2">API Reference</h3>
-            <p class="text-sm text-gray-500">Documentation technique Swagger pour les développeurs.</p>
-        </a>
-
+    <!-- Modal Face ID (Caché par défaut) -->
+    <div id="face-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="glass w-full max-w-sm rounded-3xl p-6 text-center space-y-4">
+            <h3 class="text-xl font-bold text-gray-800">Configuration Face ID</h3>
+            <div class="relative aspect-square rounded-2xl overflow-hidden bg-black border-2 border-orange-500">
+                <video id="face-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                <canvas id="face-canvas" class="hidden"></canvas>
+            </div>
+            <p class="text-xs text-gray-500">Placez votre visage au centre du cadre</p>
+            <div class="flex gap-3">
+                <button onclick="closeFaceModal()" class="flex-1 bg-gray-200 text-gray-700 font-bold p-3 rounded-xl uppercase text-xs">Annuler</button>
+                <button onclick="captureFace()" class="flex-1 btn-orange font-bold p-3 rounded-xl uppercase text-xs">Capturer</button>
+            </div>
+        </div>
     </div>
 
-    <footer class="mt-20 text-gray-600 text-xs uppercase tracking-widest">
-        Powered by Hyflex Vision Engine &copy; 2024
-    </footer>
+    <!-- Barre de Navigation Fixe -->
+    <nav id="bottom-nav" class="hidden fixed bottom-4 left-3 right-3 glass rounded-full p-1.5 flex justify-around items-center shadow-2xl border-t border-white/20">
+        <button onclick="switchTab('tab-id')" class="nav-btn p-2.5 rounded-full text-green-600 bg-green-50"><i class="fas fa-id-card text-lg"></i></button>
+        <button onclick="switchTab('tab-factures')" class="nav-btn p-2.5 rounded-full text-gray-400"><i class="fas fa-history text-lg"></i></button>
+        <button onclick="switchTab('tab-paiement')" class="nav-btn p-2.5 rounded-full text-gray-400"><i class="fas fa-wallet text-lg"></i></button>
+        <button onclick="switchTab('tab-chat')" class="nav-btn p-2.5 rounded-full text-gray-400"><i class="fas fa-robot text-lg"></i></button>
+        <button onclick="switchTab('tab-settings')" class="nav-btn p-2.5 rounded-full text-gray-400"><i class="fas fa-user-cog text-lg"></i></button>
+    </nav>
 
     <script>
-        function saveIp() {
-            const ip = document.getElementById('serverIp').value;
-            if(!ip) return alert("Entrez une IP !");
-            localStorage.setItem('hyflex_server', ip);
-            alert("Serveur configuré : " + ip);
-        }
+// ====================================================
+// CONFIG CENTRALISÉE — modifiez uniquement ici
+// ====================================================
+const CONFIG = {
+    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxxSOZyptRBlGr0svsXlWzjANkMK8RRz03gVizG56nS6KsIfyVW0ghuyxonCY7ebqYGjQ/exec",
+    GROQ_API_KEY: "",
+    GROQ_MODEL: "llama3-8b-8192",
+    GROQ_VISION_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct",
+    GROQ_API_URL: "https://api.groq.com/openai/v1/chat/completions",
+    APP_NAME: "JEL DEM"
+};
 
-        function openModule(path) {
-            let ip = localStorage.getItem('hyflex_server');
-            if(!ip) {
-                alert("Veuillez d'abord configurer l'IP du serveur en haut de la page.");
-                return;
+// La clé Groq peut aussi être sauvée dans localStorage (via les réglages)
+CONFIG.GROQ_API_KEY = localStorage.getItem('jeldem_groq_key') || CONFIG.GROQ_API_KEY;
+
+const API_URL = CONFIG.APPS_SCRIPT_URL;
+let currentUser = null;
+let faceStream = null;
+let balanceInterval = null;
+
+// Au chargement de la page, on vérifie si un utilisateur est déjà connecté
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewProfile = urlParams.get('view_profile');
+    const paymentStatus = urlParams.get('payment');
+
+    if (viewProfile) {
+        loadPublicProfile(viewProfile);
+    } else {
+        const savedUser = localStorage.getItem('jeldem_session');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            showDashboard();
+            // Retour après paiement PayDunya — rafraîchir le solde
+            if (paymentStatus === 'success') {
+                showToast('Paiement confirmé ! Mise à jour du solde...', 'success');
+                setTimeout(() => refreshUserData(true), 1500);
+            } else if (paymentStatus === 'cancel') {
+                showToast('Paiement annulé.', 'error');
             }
-            // Ajoute le protocole si manquant
-            if(!ip.startsWith('http')) ip = 'https://' + ip;
-            if(!ip.includes(':8000') && !ip.includes('vercel') && !ip.includes('ngrok')) ip = ip + ':8000';
-            
-            window.location.href = ip + path;
         }
+    }
+});
 
-        // Pré-remplissage
-        window.onload = () => {
-            const saved = localStorage.getItem('hyflex_server');
-            if(saved) document.getElementById('serverIp').value = saved;
+function toggleAuthMode(mode) {
+    const isLogin = mode === 'login';
+    document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+    document.getElementById('form-register').classList.toggle('hidden', isLogin);
+    
+    document.getElementById('tab-login-btn').className = isLogin ? 'font-bold text-sm text-orange-500 border-b-2 border-orange-500 pb-2' : 'font-bold text-sm text-gray-400 pb-2';
+    document.getElementById('tab-reg-btn').className = !isLogin ? 'font-bold text-sm text-green-500 border-b-2 border-green-500 pb-2' : 'font-bold text-sm text-gray-400 pb-2';
+    document.getElementById('auth-section').style.borderColor = isLogin ? '#f97316' : '#22c55e';
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) targetTab.classList.remove('hidden');
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-green-50', 'text-green-600');
+        btn.classList.add('text-gray-400');
+        const onClick = btn.getAttribute('onclick');
+        if (onClick && onClick.includes(tabId)) {
+            btn.classList.add('bg-green-50', 'text-green-600');
+            btn.classList.remove('text-gray-400');
         }
+    });
+
+    if (tabId === 'tab-factures') loadSuggestions();
+    if (tabId === 'tab-chat' && aiHistory.length === 0) initAiChat();
+}
+
+function renderBalanceOnly() {
+    const el = document.getElementById('display-balance');
+    if (el && currentUser) {
+        el.innerText = `${currentUser.balance.toLocaleString()} FCFA`;
+    }
+}
+
+async function refreshUserData(manual = false) {
+    if (!currentUser) return;
+    const icon = document.getElementById('refresh-icon');
+    if (manual && icon) icon.classList.add('fa-spin');
+    
+    try {
+        const res = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: "login", payload: { phone: currentUser.phone } }) 
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser = data.user_data;
+            localStorage.setItem('jeldem_session', JSON.stringify(currentUser));
+            updateUI();
+        }
+    } catch (e) {
+        console.error("Erreur refresh:", e);
+    } finally {
+        if (manual && icon) {
+            setTimeout(() => icon.classList.remove('fa-spin'), 500);
+        }
+    }
+}
+
+function updateUI() {
+    renderBalanceOnly();
+    renderTransactions();
+    
+    // Mise à jour des stats globales dans l'onglet réglages
+    const totalSpent = currentUser.transactions.reduce((acc, t) => acc + (parseFloat(t.montant) || 0), 0);
+    document.getElementById('stat-total').innerText = `${totalSpent.toLocaleString()} F`;
+    document.getElementById('stat-count').innerText = currentUser.transactions.length;
+}
+
+async function login() {
+    const phone = document.getElementById('user-phone').value;
+    const pass = document.getElementById('user-password-login').value;
+    if(!phone || !pass) return alert("Veuillez remplir tous les champs");
+
+    setLoading('login-btn', true);
+    try {
+        const payload = {
+            action: "login",
+            payload: { phone: phone, password: pass }
+        };
+
+        // Envoi en mode 'no-cors' ou simple texte pour éviter le blocage CORS Google
+        const res = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload),
+            redirect: 'follow'
+        });
+        const data = await res.json();
+        
+        if(data.success) {
+            currentUser = data.user_data;
+            // Sauvegarder la session
+            localStorage.setItem('jeldem_session', JSON.stringify(currentUser));
+            showDashboard();
+        } else {
+            alert(data.message || "Identifiants incorrects");
+        }
+    } catch(e) {
+        alert("Erreur de connexion serveur.");
+    } finally {
+        setLoading('login-btn', false);
+    }
+}
+
+function logout() {
+    if(confirm("Voulez-vous vous déconnecter ?")) {
+        localStorage.removeItem('jeldem_session');
+        window.location.reload();
+    }
+}
+
+function setLoading(btnId, isLoading) {
+    const btn = document.getElementById(btnId);
+    const loader = btn.querySelector('.loader')?.parentElement;
+    if (btn) btn.disabled = isLoading;
+    if (loader) loader.classList.toggle('hidden', !isLoading);
+}
+
+async function register() {
+    const name = document.getElementById('reg-name').value;
+    const phone = document.getElementById('reg-phone').value;
+    const email = document.getElementById('reg-email').value;
+    const pass = document.getElementById('reg-password').value;
+
+    if(!name || !phone || !pass) return alert("Nom, Téléphone et Code PIN requis !");
+
+    try {
+        const payload = {
+            action: "registerUser",
+            payload: {
+                name: name,
+                phone: phone,
+                email: email,
+                password: pass
+            }
+        };
+        const res = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload),
+            redirect: 'follow'
+        });
+        const data = await res.json();
+        if(data.success) {
+            alert("Bienvenue chez JEL DEM ! Connectez-vous maintenant.");
+            toggleAuthMode('login');
+            document.getElementById('user-phone').value = phone;
+        } else {
+            alert("Erreur lors de l'inscription.");
+        }
+    } catch(e) { alert("Erreur de connexion serveur."); }
+}
+
+async function updatePassword() {
+    const newPass = document.getElementById('new-password').value;
+    if(!newPass) return;
+    
+    const payload = {
+        action: "updatePassword",
+        payload: { phone: currentUser.phone, newPassword: newPass }
+    };
+    
+    const res = await fetch(API_URL, { 
+        method: 'POST', 
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+    });
+    const data = await res.json();
+    if(data.success) {
+        alert("Mot de passe JEL DEM mis à jour !");
+        document.getElementById('new-password').value = "";
+        // Mettre à jour le mot de passe dans le stockage local n'est pas nécessaire car on stocke les infos de profil
+    }
+}
+
+async function recharge(amount) {
+    if(!confirm(`Vous allez être redirigé vers PayDunya pour un dépôt de ${amount} FCFA. Continuer ?`)) return;
+
+    const returnBase = window.location.href.split('?')[0];
+    const payload = {
+        action: "initiatePayDunya",
+        payload: {
+            phone: currentUser.phone,
+            amount: amount,
+            return_url: `${returnBase}?payment=success&phone=${currentUser.phone}`,
+            cancel_url: `${returnBase}?payment=cancel`
+        }
+    };
+
+    const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+    });
+    const data = await res.json();
+
+    if(data.success && data.url) {
+        window.location.href = data.url;
+    } else {
+        showToast("Erreur PayDunya : " + (data.message || "Impossible d'initier le paiement"), 'error');
+    }
+}
+
+async function loadPublicProfile(phone) {
+    const res = await fetch(API_URL, { 
+        method: 'POST', 
+        body: JSON.stringify({action: 'getUserProfile', payload: {phone}}),
+        redirect: 'follow'
+    });
+    const data = await res.json();
+    if(data.success) {
+        alert(`Profil Scanné : ${data.user.name}\nSolde : ${data.user.balance} FCFA\nFace ID : ${data.user.face_active}`);
+    }
+}
+
+function showDashboard() {
+    document.getElementById('auth-section').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('bottom-nav').classList.remove('hidden');
+    document.getElementById('connection-indicator').classList.remove('hidden');
+
+    if (currentUser.name) {
+        const names = currentUser.name.split(' ');
+        document.getElementById('user-initials').innerText = (names[0][0] + (names[1] ? names[1][0] : '')).toUpperCase();
+    }
+
+    // Démarrer le rafraîchissement automatique du solde (toutes le 10s)
+    if (balanceInterval) clearInterval(balanceInterval);
+    balanceInterval = setInterval(refreshUserData, 10000);
+
+    updateUI();
+    switchTab('tab-id'); // Retour à l'onglet par défaut
+
+    // Remplissage du Profil
+    document.getElementById('prof-name').innerText = currentUser.name;
+    document.getElementById('prof-phone').innerText = currentUser.phone;
+    const phoneStr = String(currentUser.phone);
+    const rfidCode = `JD-${phoneStr.substring(0,3)}-${phoneStr.slice(-3)}`;
+    document.getElementById('prof-rfid').innerText = rfidCode;
+    
+    // Mise à jour visuelle du statut Face ID
+    const isFaceActive = currentUser.face_id === "OUI";
+    const faceStatusText = document.getElementById('face-status-text');
+    const faceIconBox = document.getElementById('face-icon-box');
+    const faceBtn = document.getElementById('face-setup-btn');
+
+    faceStatusText.innerText = isFaceActive ? "ACTIVÉ & SÉCURISÉ" : "NON CONFIGURÉ";
+    faceStatusText.className = isFaceActive ? "text-xs font-black text-green-600" : "text-xs font-black text-gray-500";
+    if (faceIconBox) {
+        faceIconBox.className = isFaceActive ? "w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shadow-sm text-green-600" : "w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-400";
+    }
+    if(isFaceActive && faceBtn) faceBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Prêt';
+
+    // Afficher le statut de la clé Groq dans les réglages
+    const groqInput = document.getElementById('groq-key-input');
+    if (groqInput && CONFIG.GROQ_API_KEY) {
+        groqInput.placeholder = 'Clé Groq configurée ✓ (laisser vide pour supprimer)';
+    }
+
+    // Génération du QR Code via API externe
+    const qrArea = document.getElementById('qr-code-display');
+    // Utilisation de l'URL propre du site
+    const baseUrl = window.location.origin + window.location.pathname;
+    const profileUrl = baseUrl + "?view_profile=" + currentUser.phone;
+    const qrData = encodeURIComponent(profileUrl);
+    
+    qrArea.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${qrData}" class="w-full h-full">`;
+    
+    // Simulation d'un ID RFID
+    document.getElementById('rfid-id').innerText = `RFID: ${rfidCode}`;
+}
+
+function renderTransactions() {
+    const list = document.getElementById('transactions-list');
+    if (!list || !currentUser.transactions) return;
+    
+    // On inverse la liste pour avoir les plus récents en haut
+    list.innerHTML = currentUser.transactions.slice().reverse().map(t => `
+        <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-green-600"><i class="fas fa-shopping-basket"></i></div>
+                <div>
+                    <p class="font-bold text-sm text-gray-800">${t.produit.toUpperCase()}</p>
+                    <p class="text-[10px] text-gray-400 font-medium">${new Date(t.timestamp).toLocaleString('fr-FR')}</p>
+                </div>
+            </div>
+            <p class="text-red-500 font-black text-sm">-${t.montant} F</p>
+        </div>
+    `).join('');
+}
+
+async function requestRfid() {
+    const rfidUid = prompt("Veuillez scanner ou saisir l'ID de votre carte RFID :");
+    if (!rfidUid) return;
+    
+    const payload = { action: "assignRfid", payload: { phone: currentUser.phone, rfidUid: rfidUid } };
+    await fetch(API_URL, { 
+        method: 'POST', 
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+    });
+    alert("Carte RFID liée avec succès !");
+    location.reload();
+}
+
+async function setupFaceID() {
+    document.getElementById('face-modal').classList.remove('hidden');
+    try {
+        faceStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        document.getElementById('face-video').srcObject = faceStream;
+    } catch (e) {
+        alert("Erreur caméra : " + e);
+        closeFaceModal();
+    }
+}
+
+function closeFaceModal() {
+    if (faceStream) {
+        faceStream.getTracks().forEach(track => track.stop());
+    }
+    document.getElementById('face-modal').classList.add('hidden');
+}
+
+function showToast(msg, type = 'info') {
+    const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-gray-800' };
+    const toast = document.createElement('div');
+    toast.className = `fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-white text-sm font-bold shadow-lg transition-all ${colors[type] || colors.info}`;
+    toast.innerText = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+}
+
+function saveGroqKey() {
+    const key = document.getElementById('groq-key-input').value.trim();
+    if (key) {
+        localStorage.setItem('jeldem_groq_key', key);
+        CONFIG.GROQ_API_KEY = key;
+        showToast('Clé Groq enregistrée !', 'success');
+        document.getElementById('groq-key-input').value = '';
+    } else {
+        localStorage.removeItem('jeldem_groq_key');
+        CONFIG.GROQ_API_KEY = '';
+        showToast('Clé Groq supprimée.', 'info');
+    }
+}
+
+async function loadSuggestions() {
+    if (!currentUser || !CONFIG.GROQ_API_KEY || !currentUser.transactions?.length) return;
+
+    const card = document.getElementById('suggestions-card');
+    const loader = document.getElementById('suggestions-loader');
+    const listEl = document.getElementById('suggestions-list');
+    const reasonEl = document.getElementById('suggestions-reason');
+
+    card.classList.remove('hidden');
+    loader.classList.remove('hidden');
+    listEl.innerHTML = '';
+
+    const bought = currentUser.transactions.slice(-10).map(t => t.produit).join(', ');
+
+    try {
+        const res = await fetch(CONFIG.GROQ_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.GROQ_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: CONFIG.GROQ_MODEL,
+                messages: [{
+                    role: 'user',
+                    content: `Tu es un assistant shopping au Sénégal. L'utilisateur a récemment acheté : ${bought}. Suggère 3 produits complémentaires courants. Réponds UNIQUEMENT avec ce JSON exact : {"suggestions": ["produit1", "produit2", "produit3"], "reason": "explication courte en français"}`
+                }],
+                max_tokens: 120,
+                temperature: 0.7
+            })
+        });
+        const data = await res.json();
+        const text = data.choices?.[0]?.message?.content || '';
+        const start = text.indexOf('{');
+        const end = text.lastIndexOf('}') + 1;
+        if (start >= 0 && end > start) {
+            const parsed = JSON.parse(text.slice(start, end));
+            reasonEl.innerText = parsed.reason || '';
+            listEl.innerHTML = (parsed.suggestions || []).map(s =>
+                `<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-[11px] font-bold cursor-pointer hover:bg-orange-200">${s}</span>`
+            ).join('');
+        }
+    } catch(e) {
+        card.classList.add('hidden');
+    } finally {
+        loader.classList.add('hidden');
+    }
+}
+
+// ====================================================
+// CHAT IA JEL DEM — Onglet 5 (Vision + Text)
+// ====================================================
+let aiHistory = [];
+let aiCatalog = {};
+let aiPendingImage = null; // base64 de l'image en attente
+
+async function initAiChat() {
+    if (!CONFIG.GROQ_API_KEY) {
+        document.getElementById('ai-config-banner').classList.remove('hidden');
+        addAiBot("Bonjour ! Je suis votre assistant JEL DEM. Configurez votre clé Groq pour activer l'IA.");
+        return;
+    }
+    document.getElementById('ai-status').innerText = 'Chargement catalogue...';
+    try {
+        const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getProducts' }), redirect: 'follow' });
+        aiCatalog = await r.json();
+    } catch(e) { aiCatalog = {}; }
+
+    const prodList = Object.keys(aiCatalog).slice(0, 30).join(', ') || 'catalogue disponible';
+    const recentBuys = (currentUser.transactions || []).slice(-5).map(t => t.produit).join(', ') || 'aucun achat';
+    document.getElementById('ai-status').innerText = 'Groq · Llama 4 Scout Vision';
+
+    aiHistory = [{
+        role: 'system',
+        content: `Tu es l'assistant personnel JEL DEM de ${currentUser.name}.
+Solde : ${(currentUser.balance || 0).toLocaleString()} FCFA.
+Achats récents : ${recentBuys}.
+Catalogue : ${prodList}.
+Tu peux analyser des images de produits. Sois chaleureux, concis (max 3 phrases), en français.`
+    }];
+
+    const firstName = currentUser.name.split(' ')[0];
+    addAiBot(`Bonjour <b>${firstName}</b> ! Solde : <b>${(currentUser.balance || 0).toLocaleString()} FCFA</b>. Je peux aussi analyser une photo de produit 📷`);
+}
+
+function saveAiKey() {
+    const k = document.getElementById('ai-groq-key').value.trim();
+    if (!k) return;
+    localStorage.setItem('jeldem_groq_key', k);
+    CONFIG.GROQ_API_KEY = k;
+    document.getElementById('ai-config-banner').classList.add('hidden');
+    aiHistory = [];
+    initAiChat();
+}
+
+function previewAiImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        aiPendingImage = e.target.result.split(',')[1]; // base64 only
+        document.getElementById('ai-img-thumb').src = e.target.result;
+        document.getElementById('ai-img-preview').classList.remove('hidden');
+        document.getElementById('ai-input').focus();
+        document.getElementById('ai-input').placeholder = 'Décrivez ce que vous cherchez...';
+    };
+    reader.readAsDataURL(file);
+    event.target.value = ''; // reset
+}
+
+function clearAiImage() {
+    aiPendingImage = null;
+    document.getElementById('ai-img-preview').classList.add('hidden');
+    document.getElementById('ai-input').placeholder = 'Posez votre question...';
+}
+
+function addAiBot(html) {
+    const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const el = document.createElement('div');
+    el.className = 'flex gap-2 items-end';
+    el.innerHTML = `
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex-shrink-0 flex items-center justify-center shadow-sm">
+            <i class="fas fa-robot text-white" style="font-size:10px"></i>
+        </div>
+        <div class="max-w-[82%]">
+            <div class="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-bl-sm text-xs leading-relaxed shadow-sm border border-gray-100">${html}</div>
+            <p class="text-[9px] text-gray-300 mt-1 ml-1">${now}</p>
+        </div>`;
+    document.getElementById('ai-messages').appendChild(el);
+    document.getElementById('ai-messages').scrollTop = 99999;
+}
+
+function addAiUser(text, hasImage = false) {
+    const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const imgTag = hasImage ? `<div class="mb-1 text-orange-300 text-[10px]"><i class="fas fa-image mr-1"></i>Image envoyée</div>` : '';
+    const el = document.createElement('div');
+    el.className = 'flex gap-2 items-end justify-end';
+    el.innerHTML = `
+        <div class="max-w-[82%] text-right">
+            <div class="bg-orange-500 text-white px-4 py-3 rounded-2xl rounded-br-sm text-xs leading-relaxed inline-block text-left">${imgTag}${text}</div>
+            <p class="text-[9px] text-gray-300 mt-1 mr-1">${now}</p>
+        </div>
+        <div class="w-7 h-7 rounded-lg bg-green-100 flex-shrink-0 flex items-center justify-center text-green-600 text-xs font-black">
+            ${currentUser ? currentUser.name[0].toUpperCase() : '?'}
+        </div>`;
+    document.getElementById('ai-messages').appendChild(el);
+    document.getElementById('ai-messages').scrollTop = 99999;
+}
+
+async function sendAiMsg() {
+    const input = document.getElementById('ai-input');
+    const text = input.value.trim();
+    if ((!text && !aiPendingImage) || !CONFIG.GROQ_API_KEY) return;
+
+    const hasImage = !!aiPendingImage;
+    const displayText = text || (hasImage ? 'Analysez cette image.' : '');
+    input.value = '';
+    addAiUser(displayText, hasImage);
+
+    const btn = document.getElementById('ai-send-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin text-xs"></i>';
+
+    // Construire le message utilisateur (texte + image éventuelle)
+    let userContent;
+    if (hasImage) {
+        userContent = [
+            { type: 'text', text: displayText },
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${aiPendingImage}` } }
+        ];
+    } else {
+        userContent = displayText;
+    }
+
+    aiHistory.push({ role: 'user', content: userContent });
+    clearAiImage();
+
+    // Indicateur de frappe
+    const typing = document.createElement('div');
+    typing.id = 'ai-typing';
+    typing.className = 'flex gap-2 items-end';
+    typing.innerHTML = `<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex-shrink-0 flex items-center justify-center shadow-sm"><i class="fas fa-robot text-white" style="font-size:10px"></i></div>
+        <div class="bg-white px-4 py-3 rounded-2xl rounded-bl-sm text-gray-300 text-xs border border-gray-100 shadow-sm">
+            <span class="inline-flex gap-1"><span class="animate-bounce" style="animation-delay:0ms">●</span><span class="animate-bounce" style="animation-delay:150ms">●</span><span class="animate-bounce" style="animation-delay:300ms">●</span></span>
+        </div>`;
+    document.getElementById('ai-messages').appendChild(typing);
+    document.getElementById('ai-messages').scrollTop = 99999;
+
+    try {
+        const model = hasImage ? CONFIG.GROQ_VISION_MODEL : CONFIG.GROQ_MODEL;
+        // Pour l'historique avec images, on ne garde que les messages texte en mémoire (évite les limites token)
+        const msgs = hasImage
+            ? [...aiHistory.slice(0, 1), ...aiHistory.slice(-3)]
+            : aiHistory;
+
+        const res = await fetch(CONFIG.GROQ_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CONFIG.GROQ_API_KEY}` },
+            body: JSON.stringify({ model, messages: msgs, max_tokens: 250, temperature: 0.7 })
+        });
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu répondre.";
+
+        // On stocke la version texte dans l'historique
+        if (hasImage) aiHistory[aiHistory.length - 1] = { role: 'user', content: `[Image + message] ${displayText}` };
+        aiHistory.push({ role: 'assistant', content: reply });
+
+        typing.remove();
+        addAiBot(reply);
+
+        fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'saveChat', payload: { userMessage: displayText + (hasImage ? ' [image]' : ''), botReply: reply } }),
+            redirect: 'follow'
+        }).catch(() => {});
+
+    } catch(e) {
+        typing.remove();
+        addAiBot("Erreur de connexion Groq. Vérifiez votre clé dans Réglages.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane text-xs"></i>';
+    }
+}
+
+async function captureFace() {
+    const video = document.getElementById('face-video');
+    const canvas = document.getElementById('face-canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    // Extraction de l'image en Base64
+    const imageData = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+
+    const payload = {
+        action: "uploadImage",
+        payload: {
+            filename: `FACE_${currentUser.phone}.jpg`,
+            image: imageData,
+            phone: currentUser.phone
+        }
+    };
+
+    try {
+        document.getElementById('face-status-text').innerText = "SYNCHRONISATION...";
+        const res = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload),
+            redirect: 'follow'
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert("Félicitations ! Votre Face ID est maintenant actif sur JEL DEM.");
+            currentUser.face_id = "OUI";
+            localStorage.setItem('jeldem_session', JSON.stringify(currentUser));
+            showDashboard();
+            closeFaceModal();
+        } else {
+            alert("Erreur lors de l'envoi : " + data.error);
+        }
+    } catch (e) {
+        alert("Erreur de connexion : " + e);
+    }
+}
     </script>
 </body>
 </html>
