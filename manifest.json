@@ -1,0 +1,27 @@
+{
+  "name": "JEL DEM — Pick & Go",
+  "short_name": "JEL DEM",
+  "description": "Votre porte-monnaie intelligent Pick & Go",
+  "start_url": "/client",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["finance", "shopping"],
+  "lang": "fr"
+}
