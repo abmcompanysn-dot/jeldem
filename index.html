@@ -91,17 +91,36 @@
         </div>
     </div>
 
-    <!-- Bannière d'installation mini (après onboarding) -->
-    <div id="install-banner" class="hidden fixed bottom-20 left-4 right-4 max-w-md mx-auto z-40 bg-white rounded-2xl shadow-xl border border-orange-100 p-4 flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style="background:linear-gradient(135deg,#f97316,#fbbf24)">
-            <i class="fas fa-robot text-white text-sm"></i>
+    <!-- Toast d'installation PWA — apparaît automatiquement -->
+    <div id="install-banner" class="hidden fixed bottom-24 left-3 right-3 max-w-md mx-auto z-50">
+        <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 flex items-center gap-3 animate-bounce-once">
+            <!-- Icône -->
+            <div class="w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center shadow-md" style="background:linear-gradient(135deg,#f97316,#fbbf24)">
+                <svg viewBox="0 0 32 32" class="w-7 h-7" fill="none">
+                    <path d="M16 2C16 2 17.2 11 16 16C14.8 11 16 2 16 2Z" fill="white" opacity="0.95"/>
+                    <path d="M16 30C16 30 14.8 21 16 16C17.2 21 16 30 16 30Z" fill="white" opacity="0.95"/>
+                    <path d="M2 16C2 16 11 14.8 16 16C11 17.2 2 16 2 16Z" fill="white" opacity="0.95"/>
+                    <path d="M30 16C30 16 21 17.2 16 16C21 14.8 30 16 30 16Z" fill="white" opacity="0.95"/>
+                    <circle cx="16" cy="16" r="3" fill="white"/>
+                </svg>
+            </div>
+            <!-- Texte -->
+            <div class="flex-1 min-w-0">
+                <p class="font-black text-sm text-gray-900">Installer JEL DEM</p>
+                <p class="text-[10px] text-gray-400 leading-tight">Accès rapide · Fonctionne hors-ligne</p>
+            </div>
+            <!-- Bouton installer -->
+            <button id="install-btn" onclick="installPwa()"
+                class="flex-shrink-0 text-white text-[11px] font-black px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95"
+                style="background:linear-gradient(135deg,#f97316,#fbbf24)">
+                Installer
+            </button>
+            <!-- Fermer -->
+            <button onclick="document.getElementById('install-banner').classList.add('hidden')"
+                class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 ml-1">
+                <i class="fas fa-times text-xs"></i>
+            </button>
         </div>
-        <div class="flex-1 min-w-0">
-            <p class="font-bold text-xs text-gray-800">Installer JEL DEM</p>
-            <p class="text-[10px] text-gray-400">Accès rapide depuis votre écran d'accueil</p>
-        </div>
-        <button onclick="installPwa()" class="bg-orange-500 text-white text-[10px] font-black px-3 py-2 rounded-xl">Installer</button>
-        <button onclick="document.getElementById('install-banner').classList.add('hidden')" class="text-gray-300 ml-1"><i class="fas fa-times text-xs"></i></button>
     </div>
 
     <header class="flex justify-between items-center mb-8 pt-4">
@@ -146,18 +165,60 @@
     <div id="dashboard" class="hidden">
         <!-- ONGLET 1: IDENTIFICATION (QR & RFID) -->
         <div id="tab-id" class="tab-content">
-            <div class="glass rounded-3xl p-6 mb-6 text-center border-b-4 border-dall-green">
-                <div id="entry-status" class="inline-block px-3 py-1 rounded-full bg-gray-100 text-[10px] font-bold text-gray-400 mb-4 uppercase tracking-widest">
-                    En attente d'entrée
+            <!-- Accueil utilisateur -->
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center text-white font-black text-lg shadow-md" style="background:linear-gradient(135deg,#f97316,#fbbf24)">
+                    <span id="qr-initials">?</span>
                 </div>
-                <div class="bg-white p-4 rounded-2xl inline-block mb-4 shadow-inner border border-gray-100">
-                    <div id="qr-code-display" class="w-40 h-40 flex items-center justify-center"></div>
+                <div>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Bonjour</p>
+                    <p class="font-black text-gray-800 text-base leading-tight" id="qr-user-name">--</p>
                 </div>
-                <div class="flex items-center justify-center gap-2 mb-2">
-                    <i class="fas fa-microchip text-xl text-green-600"></i>
-                    <p class="font-bold text-sm tracking-tight" id="rfid-id">RFID: --- --- ---</p>
+                <div class="ml-auto text-right">
+                    <p class="text-[9px] text-gray-400">Solde</p>
+                    <p class="font-black text-orange-500 text-sm" id="qr-balance-mini">--</p>
                 </div>
-                <p class="text-[10px] text-gray-400">Scannez pour entrer</p>
+            </div>
+
+            <!-- Badge statut entrée -->
+            <div id="entry-status" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gray-100 text-gray-400 text-[11px] font-black uppercase tracking-widest mb-4 transition-all duration-300">
+                <span class="w-2 h-2 rounded-full bg-gray-300"></span>En attente de scan
+            </div>
+
+            <!-- QR Code -->
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 text-center mb-4">
+                <p class="text-[9px] text-gray-300 uppercase tracking-widest mb-3 font-bold">QR Code d'entrée — Scannez à la porte</p>
+                <div id="qr-code-display" class="w-44 h-44 flex items-center justify-center mx-auto"></div>
+                <p class="text-[10px] text-gray-400 mt-3 font-mono" id="rfid-id">RFID: --- --- ---</p>
+            </div>
+
+            <!-- Raccourcis navigation -->
+            <div class="grid grid-cols-4 gap-2 mb-4">
+                <button onclick="switchTab('tab-factures')" class="flex flex-col items-center gap-1.5 bg-white rounded-2xl py-3 shadow-sm border border-gray-100 hover:border-orange-200 transition-all">
+                    <div class="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center"><i class="fas fa-store text-orange-500 text-xs"></i></div>
+                    <span class="text-[9px] text-gray-500 font-bold">Achats</span>
+                </button>
+                <button onclick="switchTab('tab-paiement')" class="flex flex-col items-center gap-1.5 bg-white rounded-2xl py-3 shadow-sm border border-gray-100 hover:border-green-200 transition-all">
+                    <div class="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center"><i class="fas fa-wallet text-green-500 text-xs"></i></div>
+                    <span class="text-[9px] text-gray-500 font-bold">Solde</span>
+                </button>
+                <button onclick="switchTab('tab-chat')" class="flex flex-col items-center gap-1.5 bg-white rounded-2xl py-3 shadow-sm border border-gray-100 hover:border-purple-200 transition-all">
+                    <div class="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center"><i class="fas fa-robot text-purple-500 text-xs"></i></div>
+                    <span class="text-[9px] text-gray-500 font-bold">IA Chat</span>
+                </button>
+                <button onclick="switchTab('tab-settings')" class="flex flex-col items-center gap-1.5 bg-white rounded-2xl py-3 shadow-sm border border-gray-100 hover:border-gray-300 transition-all">
+                    <div class="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center"><i class="fas fa-user-cog text-gray-400 text-xs"></i></div>
+                    <span class="text-[9px] text-gray-500 font-bold">Profil</span>
+                </button>
+            </div>
+
+            <!-- Flux détection produits en temps réel -->
+            <div id="detection-feed" class="hidden rounded-2xl border border-orange-200 bg-orange-50 p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
+                    <p class="text-[10px] font-black text-orange-600 uppercase tracking-wider">Détection active</p>
+                </div>
+                <div id="detection-items" class="space-y-2 text-xs text-orange-700"></div>
             </div>
         </div>
 
@@ -173,28 +234,16 @@
                 <p id="suggestions-reason" class="text-[10px] text-gray-400 mb-3 italic"></p>
                 <div id="suggestions-list" class="flex gap-2 flex-wrap"></div>
             </div>
-            <!-- Catalogue Produits -->
-            <div class="mb-5">
-                <div class="flex items-center justify-between px-1 mb-3">
-                    <h3 class="font-bold text-gray-700 uppercase text-xs tracking-widest flex items-center gap-2">
-                        <i class="fas fa-store text-orange-400"></i> Catalogue Magasin
-                    </h3>
-                    <button onclick="loadCatalog()" class="text-[10px] text-orange-400 font-bold"><i class="fas fa-sync-alt mr-1"></i>Rafraîchir</button>
-                </div>
-                <div id="catalog-loading" class="text-center py-4 text-gray-300 text-xs hidden">
-                    <i class="fas fa-spinner fa-spin mr-2"></i>Chargement du catalogue...
-                </div>
-                <div id="catalog-grid" class="grid grid-cols-2 gap-3"></div>
-            </div>
-
             <!-- Catalogue Produits avec indicateur solde -->
             <div class="mb-5">
                 <div class="flex items-center justify-between px-1 mb-3">
-                    <h3 class="font-bold text-gray-700 uppercase text-xs tracking-widest">Catalogue Magasin</h3>
+                    <h3 class="font-bold text-gray-700 uppercase text-xs tracking-widest flex items-center gap-1.5">
+                        <i class="fas fa-store text-orange-400"></i> Catalogue
+                    </h3>
                     <button onclick="loadCatalog()" class="text-[10px] text-orange-500 font-bold"><i class="fas fa-sync-alt mr-1"></i>Rafraîchir</button>
                 </div>
                 <div id="catalog-loading" class="hidden text-center py-3 text-xs text-gray-300">
-                    <i class="fas fa-spinner fa-spin mr-2"></i>Chargement catalogue...
+                    <i class="fas fa-spinner fa-spin mr-2"></i>Chargement...
                 </div>
                 <div id="catalog-grid" class="grid grid-cols-2 gap-3"></div>
             </div>
@@ -256,17 +305,16 @@
                 </div>
             </div>
 
-            <!-- Clé API Groq pour les suggestions -->
-            <div class="glass p-4 rounded-3xl text-left">
-                <h3 class="font-bold text-gray-800 flex items-center gap-2 mb-3">
-                    <i class="fas fa-magic text-orange-500"></i>
-                    Suggestions IA (Groq)
-                </h3>
-                <input type="password" id="groq-key-input" placeholder="Clé API Groq (optionnel)"
-                    class="w-full bg-gray-100 p-3 rounded-2xl outline-none text-xs focus:ring-2 focus:ring-orange-500 mb-2">
-                <button onclick="saveGroqKey()" class="w-full bg-orange-100 text-orange-700 text-[10px] font-bold p-2 rounded-xl uppercase">
-                    Enregistrer la clé
-                </button>
+            <!-- Statut IA -->
+            <div class="flex items-center gap-3 bg-purple-50 border border-purple-100 rounded-2xl px-4 py-3">
+                <div class="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-robot text-purple-500 text-xs"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-black text-purple-700">Assistant IA Actif</p>
+                    <p class="text-[9px] text-purple-400">Groq Llama 4 Scout Vision — configuré</p>
+                </div>
+                <span class="w-2 h-2 rounded-full bg-green-400"></span>
             </div>
 
             <!-- Centre de Sécurité & Face ID -->
@@ -393,6 +441,68 @@
 
     <script>
 // ====================================================
+// PWA — Service Worker + Installation
+// ====================================================
+let deferredInstallPrompt = null;
+
+// Enregistrer le Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
+// Capturer l'événement d'installation PWA
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    // Activer le bouton dans l'onboarding
+    const btn = document.getElementById('install-pwa-btn');
+    if (btn) btn.classList.remove('hidden');
+});
+
+// Afficher le toast d'installation après 2 secondes (sauf si déjà installé)
+window.addEventListener('load', () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const dismissed = sessionStorage.getItem('install_dismissed');
+    if (!isStandalone && !dismissed) {
+        setTimeout(() => {
+            document.getElementById('install-banner').classList.remove('hidden');
+        }, 2000);
+    }
+});
+
+// Masquer définitivement si l'app est installée
+window.addEventListener('appinstalled', () => {
+    document.getElementById('install-banner').classList.add('hidden');
+    deferredInstallPrompt = null;
+    showToast('JEL DEM installé avec succès !', 'success');
+});
+
+async function installPwa() {
+    const banner = document.getElementById('install-banner');
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        if (outcome === 'accepted') {
+            banner.classList.add('hidden');
+        } else {
+            sessionStorage.setItem('install_dismissed', '1');
+            banner.classList.add('hidden');
+        }
+    } else {
+        // iOS ou navigateur sans prompt natif → message guidé
+        showToast('Sur iOS : Partager → Sur l\'écran d\'accueil', 'info');
+        sessionStorage.setItem('install_dismissed', '1');
+        banner.classList.add('hidden');
+    }
+}
+
+function closeOnboarding() {
+    document.getElementById('onboarding').style.display = 'none';
+    localStorage.setItem('jeldem_onboarded', '1');
+}
+
+// ====================================================
 // CONFIG CENTRALISÉE — modifiez uniquement ici
 // ====================================================
 const CONFIG = {
@@ -463,6 +573,59 @@ function switchTab(tabId) {
 
     if (tabId === 'tab-factures') { loadSuggestions(); loadCatalog(); }
     if (tabId === 'tab-chat' && aiHistory.length === 0) initAiChat();
+}
+
+// ========================================
+// POLLING RFID — Détection entrée en live
+// ========================================
+let rfidPollInterval = null;
+let lastRfidTimestamp = 0;
+
+function startRfidPolling() {
+    if (rfidPollInterval) clearInterval(rfidPollInterval);
+    rfidPollInterval = setInterval(pollRfidEvent, 3000);
+}
+
+async function pollRfidEvent() {
+    const rawUrl = localStorage.getItem('hyflex_server');
+    if (!rawUrl || !currentUser) return;
+    try {
+        const base = rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl;
+        const url = base.includes(':8000') || base.includes('ngrok') || base.includes('vercel') ? base : base + ':8000';
+        const res = await fetch(url + '/api/last_rfid_event', { signal: AbortSignal.timeout(2500) });
+        if (!res.ok) return;
+        const ev = await res.json();
+        if (!ev || !ev.timestamp) return;
+
+        // Nouvel événement depuis la dernière vérification
+        if (ev.timestamp > lastRfidTimestamp) {
+            lastRfidTimestamp = ev.timestamp;
+            const isCurrentUser = ev.user && currentUser.name &&
+                ev.user.toLowerCase().includes(currentUser.name.split(' ')[0].toLowerCase());
+            updateEntryStatus(ev, isCurrentUser);
+        }
+    } catch(e) { /* serveur hors ligne — silencieux */ }
+}
+
+function updateEntryStatus(rfidEvent, isMe = false) {
+    const el = document.getElementById('entry-status');
+    if (!el) return;
+    const label = isMe ? `Entré — ${rfidEvent.user || currentUser.name}` : `Scan détecté — ${rfidEvent.user || 'Client'}`;
+    const color = isMe ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-blue-50 text-blue-500 border border-blue-100';
+    const dot = isMe ? 'bg-green-400 animate-pulse' : 'bg-blue-400';
+    el.className = `w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl ${color} text-[11px] font-black uppercase tracking-widest mb-4 transition-all duration-300`;
+    el.innerHTML = `<span class="w-2 h-2 rounded-full ${dot}"></span>${label} ✓`;
+    // Remettre en gris après 30s
+    setTimeout(() => {
+        el.className = 'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gray-100 text-gray-400 text-[11px] font-black uppercase tracking-widest mb-4 transition-all duration-300';
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-gray-300"></span>En attente de scan';
+    }, 30000);
+}
+
+// Met à jour le mini-solde dans tab-id après un achat
+function updateQrBalanceMini() {
+    const el = document.getElementById('qr-balance-mini');
+    if (el && currentUser) el.innerText = `${(currentUser.balance || 0).toLocaleString()} F`;
 }
 
 function renderBalanceOnly() {
@@ -544,6 +707,8 @@ async function login() {
 
 function logout() {
     if(confirm("Voulez-vous vous déconnecter ?")) {
+        if (rfidPollInterval) clearInterval(rfidPollInterval);
+        if (balanceInterval) clearInterval(balanceInterval);
         localStorage.removeItem('jeldem_session');
         window.location.reload();
     }
@@ -675,15 +840,27 @@ function showDashboard() {
 
     if (currentUser.name) {
         const names = currentUser.name.split(' ');
-        document.getElementById('user-initials').innerText = (names[0][0] + (names[1] ? names[1][0] : '')).toUpperCase();
+        const initials = (names[0][0] + (names[1] ? names[1][0] : '')).toUpperCase();
+        document.getElementById('user-initials').innerText = initials;
+        // Nouveaux éléments tab-id
+        const qrInit = document.getElementById('qr-initials');
+        if (qrInit) qrInit.innerText = initials;
+        const qrName = document.getElementById('qr-user-name');
+        if (qrName) qrName.innerText = currentUser.name.split(' ')[0];
     }
 
-    // Démarrer le rafraîchissement automatique du solde (toutes le 10s)
+    const qrMini = document.getElementById('qr-balance-mini');
+    if (qrMini) qrMini.innerText = `${(currentUser.balance || 0).toLocaleString()} F`;
+
+    // Démarrer le rafraîchissement automatique du solde (toutes les 10s)
     if (balanceInterval) clearInterval(balanceInterval);
     balanceInterval = setInterval(refreshUserData, 10000);
 
+    // Démarrer le polling RFID (toutes les 3s)
+    startRfidPolling();
+
     updateUI();
-    switchTab('tab-id'); // Retour à l'onglet par défaut
+    switchTab('tab-id');
 
     // Remplissage du Profil
     document.getElementById('prof-name').innerText = currentUser.name;
@@ -936,8 +1113,9 @@ async function buyProduct(id, name, price) {
         if (data.success) {
             currentUser.balance = data.newBalance;
             renderBalanceOnly();
+            updateQrBalanceMini();
             showToast(`✓ Achat confirmé ! Nouveau solde : ${data.newBalance.toLocaleString()} FCFA`, 'success');
-            renderCatalog(); // re-render avec nouveau solde (pas de rechargement réseau)
+            renderCatalog();
         } else if (data.error === 'insufficient_balance') {
             showToast('Solde insuffisant pour cet achat.', 'error');
         } else {
