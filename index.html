@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HYFLEX — Pick & Go</title>
+    <title>JEL DEM — Pick & Go</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#f97316">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="HYFLEX">
+    <meta name="apple-mobile-web-app-title" content="JEL DEM">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -59,7 +59,7 @@
 
             <!-- Titre -->
             <div>
-                <h1 class="text-4xl font-black tracking-tighter" style="background:linear-gradient(135deg,#f97316,#fb923c,#fbbf24);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">HYFLEX</h1>
+                <h1 class="text-4xl font-black tracking-tighter" style="background:linear-gradient(135deg,#f97316,#fb923c,#fbbf24);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">JEL DEM</h1>
                 <p class="text-gray-400 text-sm font-medium mt-1">Votre super app Pick &amp; Go</p>
             </div>
 
@@ -107,7 +107,7 @@
             </div>
             <!-- Texte -->
             <div class="flex-1 min-w-0">
-                <p class="font-black text-sm text-gray-900">Installer HYFLEX</p>
+                <p class="font-black text-sm text-gray-900">Installer JEL DEM</p>
                 <p class="text-[10px] text-gray-400 leading-tight">Accès rapide · Fonctionne hors-ligne</p>
             </div>
             <!-- Bouton installer -->
@@ -265,7 +265,7 @@
             <div class="card-balance rounded-3xl p-8 mb-6 shadow-xl relative overflow-hidden">
                 <div class="relative z-10 flex justify-between items-start">
                     <div>
-                        <p class="text-white/80 font-bold text-xs uppercase tracking-widest mb-1">Solde HYFLEX</p>
+                        <p class="text-white/80 font-bold text-xs uppercase tracking-widest mb-1">Solde JEL DEM</p>
                         <h3 class="text-4xl font-black" id="display-balance">0 FCFA</h3>
                     </div>
                     <button onclick="refreshUserData(true)" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-all text-white" title="Rafraîchir">
@@ -285,6 +285,27 @@
 
         <!-- ONGLET 4: RÉGLAGES (SÉCURITÉ) -->
         <div id="tab-settings" class="tab-content hidden space-y-4">
+            <!-- Bannière rôle Manager/Admin (cachée pour les clients) -->
+            <div id="settings-role-banner" class="hidden rounded-3xl p-4 border-2 border-orange-200" style="background:linear-gradient(135deg,rgba(251,146,60,0.08),rgba(251,191,36,0.12))">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md" style="background:linear-gradient(135deg,#f97316,#fbbf24)">
+                        <i class="fas fa-store-alt text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Votre rôle</p>
+                        <p class="font-black text-sm text-gray-900" id="settings-role-text">Manager JEL DEM</p>
+                    </div>
+                    <button onclick="switchTab('tab-manager')" class="btn-orange text-[10px] font-black px-3 py-2.5 rounded-2xl flex-shrink-0 flex items-center gap-1.5">
+                        <i class="fas fa-store-alt text-xs"></i> Gérer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Déconnexion — en haut pour accès rapide -->
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-50 border border-red-100 text-red-500 font-bold text-sm hover:bg-red-100 active:scale-95 transition-all">
+                <i class="fas fa-power-off"></i> Se déconnecter
+            </button>
+
             <!-- Informations Personnelles -->
             <div class="glass p-6 rounded-3xl text-left">
                 <h3 class="font-bold mb-4 text-gray-800 flex items-center gap-2">
@@ -352,7 +373,6 @@
                 </form>
             </div>
             
-            <button onclick="logout()" class="w-full text-red-500 font-bold text-xs uppercase tracking-widest pt-4">Se déconnecter</button>
         </div>
 
         <!-- ONGLET 6: ESPACE MANAGER -->
@@ -365,7 +385,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-sm text-gray-900">Espace Manager</h3>
-                        <p class="text-[10px] text-gray-400" id="manager-role-badge">Gérant HYFLEX</p>
+                        <p class="text-[10px] text-gray-400" id="manager-role-badge">Gérant JEL DEM</p>
                     </div>
                 </div>
                 <button onclick="loadManagerData()" class="text-[10px] text-orange-500 font-bold"><i class="fas fa-sync-alt mr-1"></i>Actualiser</button>
@@ -476,7 +496,7 @@
                         <i class="fas fa-robot text-white text-sm"></i>
                     </div>
                     <div>
-                        <h3 class="font-extrabold text-sm text-gray-900">Assistant HYFLEX</h3>
+                        <h3 class="font-extrabold text-sm text-gray-900">Assistant JEL DEM</h3>
                         <p class="text-[10px] text-gray-400" id="ai-status">Groq · Llama 4 Scout Vision</p>
                     </div>
                 </div>
@@ -638,7 +658,7 @@ window.addEventListener('load', () => {
 window.addEventListener('appinstalled', () => {
     document.getElementById('install-banner').classList.add('hidden');
     deferredInstallPrompt = null;
-    showToast('HYFLEX installé avec succès !', 'success');
+    showToast('JEL DEM installé avec succès !', 'success');
 });
 
 async function installPwa() {
@@ -675,7 +695,7 @@ const CONFIG = {
     GROQ_MODEL: "llama-3.3-70b-versatile",
     GROQ_VISION_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct",
     GROQ_API_URL: "https://api.groq.com/openai/v1/chat/completions",
-    APP_NAME: "HYFLEX"
+    APP_NAME: "JEL DEM"
 };
 
 // config.js ou localStorage peuvent override la clé
@@ -911,7 +931,7 @@ async function register() {
         });
         const data = await res.json();
         if(data.success) {
-            alert("Bienvenue sur HYFLEX ! Connectez-vous maintenant.");
+            alert("Bienvenue sur JEL DEM ! Connectez-vous maintenant.");
             toggleAuthMode('login');
             document.getElementById('user-phone').value = phone;
         } else {
@@ -936,7 +956,7 @@ async function updatePassword() {
     });
     const data = await res.json();
     if(data.success) {
-        alert("Mot de passe HYFLEX mis à jour !");
+        alert("Mot de passe JEL DEM mis à jour !");
         document.getElementById('new-password').value = "";
         // Mettre à jour le mot de passe dans le stockage local n'est pas nécessaire car on stocke les infos de profil
     }
@@ -1028,9 +1048,15 @@ function showDashboard() {
     const isManager = ['Manager', 'Admin'].includes(currentUser.role);
     const mgrBtn = document.getElementById('nav-manager-btn');
     if (mgrBtn) mgrBtn.classList.toggle('hidden', !isManager);
+
+    // Bannière rôle dans les réglages
+    const settingsBanner = document.getElementById('settings-role-banner');
+    if (settingsBanner) settingsBanner.classList.toggle('hidden', !isManager);
     if (isManager) {
         const badge = document.getElementById('manager-role-badge');
-        if (badge) badge.innerText = currentUser.role + ' HYFLEX';
+        if (badge) badge.innerText = currentUser.role + ' JEL DEM';
+        const roleText = document.getElementById('settings-role-text');
+        if (roleText) roleText.innerText = currentUser.role + ' JEL DEM';
         loadManagerData();
     }
 
@@ -1625,7 +1651,7 @@ let aiPendingImage = null;
 async function initAiChat() {
     if (!CONFIG.GROQ_API_KEY) {
         document.getElementById('ai-config-banner').classList.remove('hidden');
-        addAiBot("Bonjour ! Je suis votre assistant HYFLEX. Vérifiez votre connexion internet.");
+        addAiBot("Bonjour ! Je suis votre assistant JEL DEM. Vérifiez votre connexion internet.");
         return;
     }
     document.getElementById('ai-status').innerText = 'Chargement catalogue...';
@@ -1645,7 +1671,7 @@ async function initAiChat() {
 
     aiHistory = [{
         role: 'system',
-        content: `Tu es l'assistant personnel HYFLEX de ${currentUser.name}, un système Pick & Go au Sénégal.
+        content: `Tu es l'assistant personnel JEL DEM de ${currentUser.name}, un système Pick & Go au Sénégal.
 Compte : solde ${(currentUser.balance || 0).toLocaleString()} FCFA | Achats récents : ${recentBuys}.
 Catalogue magasin (format id:nom:prix) : ${prodList}.
 
@@ -1924,7 +1950,7 @@ async function captureFace() {
         });
         const data = await res.json();
         if (data.success) {
-            alert("Félicitations ! Votre Face ID est maintenant actif sur HYFLEX.");
+            alert("Félicitations ! Votre Face ID est maintenant actif sur JEL DEM.");
             currentUser.face_id = "OUI";
             localStorage.setItem('jeldem_session', JSON.stringify(currentUser));
             showDashboard();
