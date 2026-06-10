@@ -125,7 +125,7 @@
     </div>
 
     <header class="flex justify-between items-center mb-8 pt-4">
-        <h1 class="text-2xl font-extrabold tracking-tighter text-gray-900">HY<span class="text-dall-orange">FLEX</span></h1>
+        <h1 class="text-2xl font-extrabold tracking-tighter text-gray-900">JEL <span class="text-dall-orange">DEM</span></h1>
         <div class="flex items-center gap-2">
             <div id="connection-indicator" class="hidden text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full"><span class="status-dot"></span> LIVE</div>
             <div id="user-initials" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">?</div>
@@ -835,6 +835,7 @@ async function refreshUserData(manual = false) {
             currentUser = data.user_data;
             localStorage.setItem('jeldem_session', JSON.stringify(currentUser));
             updateUI();
+            updateRoleUI();
         }
     } catch (e) {
         console.error("Erreur refresh:", e);
@@ -848,11 +849,26 @@ async function refreshUserData(manual = false) {
 function updateUI() {
     renderBalanceOnly();
     renderTransactions();
-    
+
     // Mise à jour des stats globales dans l'onglet réglages
     const totalSpent = currentUser.transactions.reduce((acc, t) => acc + (parseFloat(t.montant) || 0), 0);
     document.getElementById('stat-total').innerText = `${totalSpent.toLocaleString()} F`;
     document.getElementById('stat-count').innerText = currentUser.transactions.length;
+}
+
+function updateRoleUI() {
+    if (!currentUser) return;
+    const isManager = ['Manager', 'Admin'].includes(currentUser.role);
+    const mgrBtn = document.getElementById('nav-manager-btn');
+    if (mgrBtn) mgrBtn.classList.toggle('hidden', !isManager);
+    const settingsBanner = document.getElementById('settings-role-banner');
+    if (settingsBanner) settingsBanner.classList.toggle('hidden', !isManager);
+    if (isManager) {
+        const badge = document.getElementById('manager-role-badge');
+        if (badge) badge.innerText = currentUser.role + ' JEL DEM';
+        const roleText = document.getElementById('settings-role-text');
+        if (roleText) roleText.innerText = currentUser.role + ' JEL DEM';
+    }
 }
 
 async function login() {
