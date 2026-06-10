@@ -1131,7 +1131,8 @@ async function buyProduct(id, name, price) {
 // ====================================================
 let aiHistory = [];
 let aiCatalog = {};
-let aiPendingImage = null; // base64 de l'image en attente
+let aiFullCatalog = [];
+let aiPendingImage = null;
 
 async function initAiChat() {
     if (!CONFIG.GROQ_API_KEY) {
@@ -1141,28 +1142,37 @@ async function initAiChat() {
     }
     document.getElementById('ai-status').innerText = 'Chargement catalogue...';
     try {
-        const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getProducts' }), redirect: 'follow' });
-        aiCatalog = await r.json();
-    } catch(e) { aiCatalog = {}; }
+        const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getProductsFull' }), redirect: 'follow' });
+        aiFullCatalog = await r.json();
+        if (!Array.isArray(aiFullCatalog)) aiFullCatalog = [];
+        aiCatalog = {};
+        aiFullCatalog.forEach(p => { aiCatalog[p.name] = p.price; });
+    } catch(e) { aiFullCatalog = []; aiCatalog = {}; }
 
-    const prodList = Object.keys(aiCatalog).slice(0, 30).join(', ') || 'catalogue disponible';
-    const recentBuys = (currentUser.transactions || []).slice(-5).map(t => t.produit).join(', ') || 'aucun achat';
-    document.getElementById('ai-status').innerText = 'Groq · Llama 4 Scout Vision';
+    const prodList = aiFullCatalog.slice(0, 25)
+        .map(p => `${p.id}:${p.name}:${p.price}F`)
+        .join(' | ') || 'catalogue non disponible';
+    const recentBuys = (currentUser.transactions || []).slice(-5).map(t => t.produit).join(', ') || 'aucun achat récent';
+    document.getElementById('ai-status').innerText = 'Groq · Llama 4 Scout · Actif';
 
     aiHistory = [{
         role: 'system',
-        content: `Tu es l'assistant personnel HYFLEX de ${currentUser.name}.
-Solde actuel : ${(currentUser.balance || 0).toLocaleString()} FCFA.
-Achats récents : ${recentBuys}.
-Catalogue magasin : ${prodList}.
-Tu peux analyser des images de produits envoyées par l'utilisateur.
-Sois chaleureux, utile et concis (2-3 phrases max). Réponds toujours en français.
-Si l'utilisateur demande son solde, donne-le précisément. Si il demande des suggestions, propose des produits du catalogue.`
+        content: `Tu es l'assistant personnel HYFLEX de ${currentUser.name}, un système Pick & Go au Sénégal.
+Compte : solde ${(currentUser.balance || 0).toLocaleString()} FCFA | Achats récents : ${recentBuys}.
+Catalogue magasin (format id:nom:prix) : ${prodList}.
+
+RÈGLES IMPORTANTES :
+1. Tu es un assistant POLYVALENT et chaleureux — réponds sur n'importe quel sujet (santé, conseils, vie quotidienne, blagues, etc.).
+2. Ne parle de produits ou d'achats QUE si l'utilisateur le demande. Ne fais pas de publicité.
+3. Si l'utilisateur veut acheter un produit du catalogue, réponds normalement ET ajoute [[BUY:id:nom:prix]] à la toute fin (exemple : [[BUY:P1:Pain:500]]).
+4. Si l'utilisateur demande son solde, donne-le précisément.
+5. Tu peux analyser des images envoyées par l'utilisateur (produits, reçus, photos).
+6. Réponds toujours en français, sois concis (2-3 phrases max).`
     }];
 
     const firstName = currentUser.name.split(' ')[0];
-    addAiBot(`Bonjour <b>${firstName}</b> ! 👋 Solde : <b>${(currentUser.balance || 0).toLocaleString()} FCFA</b>. Que puis-je faire pour vous ?`);
-    addAiChips(['💰 Mon solde', '🛍️ Idées produits', '📊 Mes achats', '❓ Comment ça marche']);
+    addAiBot(`Salut <b>${firstName}</b> ! 👋 Comment puis-je t'aider aujourd'hui ?`);
+    addAiChips(['💰 Mon solde', '🛒 Que puis-je acheter ?', '📊 Mes derniers achats', '💬 On discute ?']);
 }
 
 function saveAiKey() {
@@ -1245,6 +1255,70 @@ function aiQuickSend(text) {
     sendAiMsg();
 }
 
+function addAiBuyConfirm(id, name, price) {
+    const balance = currentUser?.balance || 0;
+    const canAfford = balance >= price;
+    const el = document.createElement('div');
+    el.className = 'flex gap-2 items-start pl-9 mb-1';
+    if (!canAfford) {
+        el.innerHTML = `<div class="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 text-xs">
+            <p class="font-bold text-red-600">🛍️ ${name} — ${price.toLocaleString()} FCFA</p>
+            <p class="text-red-400 mt-1">Solde insuffisant (${balance.toLocaleString()} FCFA disponible)</p>
+        </div>`;
+    } else {
+        el.innerHTML = `<div class="bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3 w-full max-w-[82%]">
+            <p class="text-[11px] font-black text-orange-700 mb-1">🛍️ ${name}</p>
+            <p class="text-[10px] text-gray-500 mb-3">Prix : <b class="text-orange-600">${price.toLocaleString()} FCFA</b> · Solde après : <b>${(balance - price).toLocaleString()} FCFA</b></p>
+            <button onclick="buyFromChat('${id}','${name.replace(/'/g,"\\'").replace(/"/g,'\\"')}',${price},this.closest('.flex'))"
+                class="w-full py-2 rounded-xl bg-orange-500 text-white text-[11px] font-black uppercase tracking-wide active:scale-95 transition-all">
+                ✓ Confirmer l'achat
+            </button>
+        </div>`;
+    }
+    document.getElementById('ai-messages').appendChild(el);
+    document.getElementById('ai-messages').scrollTop = 99999;
+}
+
+async function buyFromChat(id, name, price, container) {
+    if (!currentUser || currentUser.balance < price) {
+        showToast('Solde insuffisant', 'error');
+        return;
+    }
+    container.querySelector('button').disabled = true;
+    container.querySelector('button').innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Traitement...';
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'purchaseProduct',
+                payload: {
+                    phone: currentUser.phone,
+                    userName: currentUser.name,
+                    userEmail: currentUser.email || '',
+                    productId: id,
+                    productName: name,
+                    price: price
+                }
+            }),
+            redirect: 'follow'
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser.balance = data.newBalance;
+            localStorage.setItem('jeldem_session', JSON.stringify(currentUser));
+            renderBalanceOnly();
+            updateQrBalanceMini();
+            container.innerHTML = `<div class="text-green-600 text-xs font-black pl-1 py-2">✓ Achat confirmé — nouveau solde : ${data.newBalance.toLocaleString()} FCFA</div>`;
+            addAiBot(`Parfait ! J'ai confirmé l'achat de <b>${name}</b> pour <b>${price.toLocaleString()} FCFA</b>. Il te reste <b>${data.newBalance.toLocaleString()} FCFA</b>. 🎉`);
+        } else {
+            container.innerHTML = `<div class="text-red-500 text-xs font-black pl-1 py-2">⚠️ Achat échoué — ${data.message || 'réessayez'}</div>`;
+        }
+    } catch(e) {
+        container.innerHTML = `<div class="text-red-500 text-xs font-black pl-1 py-2">⚠️ Erreur réseau</div>`;
+    }
+}
+
 async function sendAiMsg() {
     const input = document.getElementById('ai-input');
     const text = input.value.trim();
@@ -1300,7 +1374,11 @@ async function sendAiMsg() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error?.message || `Erreur ${res.status}`);
-        const reply = data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu répondre.";
+        const rawReply = data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu répondre.";
+
+        // Parser la balise d'achat [[BUY:id:nom:prix]]
+        const buyMatch = rawReply.match(/\[\[BUY:([^\]:]+):([^\]:]+):(\d+)\]\]/);
+        const reply = rawReply.replace(/\[\[BUY:[^\]]+\]\]/g, '').trim();
 
         // On stocke la version texte dans l'historique
         if (hasImage) aiHistory[aiHistory.length - 1] = { role: 'user', content: `[Image + message] ${displayText}` };
@@ -1308,6 +1386,12 @@ async function sendAiMsg() {
 
         typing.remove();
         addAiBot(reply);
+
+        // Afficher le widget d'achat si détecté
+        if (buyMatch) {
+            const [, pid, pname, pprice] = buyMatch;
+            addAiBuyConfirm(pid, pname.trim(), parseInt(pprice));
+        }
 
         fetch(API_URL, {
             method: 'POST',
