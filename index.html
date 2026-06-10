@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JEL DEM - Super App</title>
+    <title>HYFLEX — Pick & Go</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#f97316">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="JEL DEM">
+    <meta name="apple-mobile-web-app-title" content="HYFLEX">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -58,8 +58,8 @@
 
             <!-- Titre -->
             <div>
-                <h1 class="text-4xl font-black tracking-tighter" style="background:linear-gradient(135deg,#f97316,#fb923c,#fbbf24);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">JEL DEM</h1>
-                <p class="text-gray-400 text-sm font-medium mt-1">Votre super app Pick & Go</p>
+                <h1 class="text-4xl font-black tracking-tighter" style="background:linear-gradient(135deg,#f97316,#fb923c,#fbbf24);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">HYFLEX</h1>
+                <p class="text-gray-400 text-sm font-medium mt-1">Votre super app Pick &amp; Go</p>
             </div>
 
             <!-- Features list style Gemini -->
@@ -106,7 +106,7 @@
             </div>
             <!-- Texte -->
             <div class="flex-1 min-w-0">
-                <p class="font-black text-sm text-gray-900">Installer JEL DEM</p>
+                <p class="font-black text-sm text-gray-900">Installer HYFLEX</p>
                 <p class="text-[10px] text-gray-400 leading-tight">Accès rapide · Fonctionne hors-ligne</p>
             </div>
             <!-- Bouton installer -->
@@ -124,7 +124,7 @@
     </div>
 
     <header class="flex justify-between items-center mb-8 pt-4">
-        <h1 class="text-2xl font-extrabold tracking-tighter text-gray-900">JEL <span class="text-dall-orange">DEM</span></h1>
+        <h1 class="text-2xl font-extrabold tracking-tighter text-gray-900">HY<span class="text-dall-orange">FLEX</span></h1>
         <div class="flex items-center gap-2">
             <div id="connection-indicator" class="hidden text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full"><span class="status-dot"></span> LIVE</div>
             <div id="user-initials" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">?</div>
@@ -257,7 +257,7 @@
             <div class="card-balance rounded-3xl p-8 mb-6 shadow-xl relative overflow-hidden">
                 <div class="relative z-10 flex justify-between items-start">
                     <div>
-                        <p class="text-white/80 font-bold text-xs uppercase tracking-widest mb-1">Solde JEL DEM</p>
+                        <p class="text-white/80 font-bold text-xs uppercase tracking-widest mb-1">Solde HYFLEX</p>
                         <h3 class="text-4xl font-black" id="display-balance">0 FCFA</h3>
                     </div>
                     <button onclick="refreshUserData(true)" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-all text-white" title="Rafraîchir">
@@ -356,7 +356,7 @@
                         <i class="fas fa-robot text-white text-sm"></i>
                     </div>
                     <div>
-                        <h3 class="font-extrabold text-sm text-gray-900">Assistant JEL DEM</h3>
+                        <h3 class="font-extrabold text-sm text-gray-900">Assistant HYFLEX</h3>
                         <p class="text-[10px] text-gray-400" id="ai-status">Groq · Llama 4 Scout Vision</p>
                     </div>
                 </div>
@@ -474,7 +474,7 @@ window.addEventListener('load', () => {
 window.addEventListener('appinstalled', () => {
     document.getElementById('install-banner').classList.add('hidden');
     deferredInstallPrompt = null;
-    showToast('JEL DEM installé avec succès !', 'success');
+    showToast('HYFLEX installé avec succès !', 'success');
 });
 
 async function installPwa() {
@@ -507,14 +507,14 @@ function closeOnboarding() {
 // ====================================================
 const CONFIG = {
     APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxxSOZyptRBlGr0svsXlWzjANkMK8RRz03gVizG56nS6KsIfyVW0ghuyxonCY7ebqYGjQ/exec",
-    GROQ_API_KEY: "",
+    GROQ_API_KEY: "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",
     GROQ_MODEL: "llama3-8b-8192",
     GROQ_VISION_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct",
     GROQ_API_URL: "https://api.groq.com/openai/v1/chat/completions",
-    APP_NAME: "JEL DEM"
+    APP_NAME: "HYFLEX"
 };
 
-// Priorité : config.js → localStorage → valeur vide
+// config.js ou localStorage peuvent override la clé
 CONFIG.GROQ_API_KEY = (window.JELDEM_CONFIG?.GROQ_API_KEY) || localStorage.getItem('jeldem_groq_key') || CONFIG.GROQ_API_KEY;
 
 const API_URL = CONFIG.APPS_SCRIPT_URL;
@@ -746,7 +746,7 @@ async function register() {
         });
         const data = await res.json();
         if(data.success) {
-            alert("Bienvenue chez JEL DEM ! Connectez-vous maintenant.");
+            alert("Bienvenue sur HYFLEX ! Connectez-vous maintenant.");
             toggleAuthMode('login');
             document.getElementById('user-phone').value = phone;
         } else {
@@ -771,7 +771,7 @@ async function updatePassword() {
     });
     const data = await res.json();
     if(data.success) {
-        alert("Mot de passe JEL DEM mis à jour !");
+        alert("Mot de passe HYFLEX mis à jour !");
         document.getElementById('new-password').value = "";
         // Mettre à jour le mot de passe dans le stockage local n'est pas nécessaire car on stocke les infos de profil
     }
@@ -1136,7 +1136,7 @@ let aiPendingImage = null; // base64 de l'image en attente
 async function initAiChat() {
     if (!CONFIG.GROQ_API_KEY) {
         document.getElementById('ai-config-banner').classList.remove('hidden');
-        addAiBot("Bonjour ! Je suis votre assistant JEL DEM. Configurez votre clé Groq pour activer l'IA.");
+        addAiBot("Bonjour ! Je suis votre assistant HYFLEX. Vérifiez votre connexion internet.");
         return;
     }
     document.getElementById('ai-status').innerText = 'Chargement catalogue...';
@@ -1151,15 +1151,18 @@ async function initAiChat() {
 
     aiHistory = [{
         role: 'system',
-        content: `Tu es l'assistant personnel JEL DEM de ${currentUser.name}.
-Solde : ${(currentUser.balance || 0).toLocaleString()} FCFA.
+        content: `Tu es l'assistant personnel HYFLEX de ${currentUser.name}.
+Solde actuel : ${(currentUser.balance || 0).toLocaleString()} FCFA.
 Achats récents : ${recentBuys}.
-Catalogue : ${prodList}.
-Tu peux analyser des images de produits. Sois chaleureux, concis (max 3 phrases), en français.`
+Catalogue magasin : ${prodList}.
+Tu peux analyser des images de produits envoyées par l'utilisateur.
+Sois chaleureux, utile et concis (2-3 phrases max). Réponds toujours en français.
+Si l'utilisateur demande son solde, donne-le précisément. Si il demande des suggestions, propose des produits du catalogue.`
     }];
 
     const firstName = currentUser.name.split(' ')[0];
-    addAiBot(`Bonjour <b>${firstName}</b> ! Solde : <b>${(currentUser.balance || 0).toLocaleString()} FCFA</b>. Je peux aussi analyser une photo de produit 📷`);
+    addAiBot(`Bonjour <b>${firstName}</b> ! 👋 Solde : <b>${(currentUser.balance || 0).toLocaleString()} FCFA</b>. Que puis-je faire pour vous ?`);
+    addAiChips(['💰 Mon solde', '🛍️ Idées produits', '📊 Mes achats', '❓ Comment ça marche']);
 }
 
 function saveAiKey() {
@@ -1226,6 +1229,22 @@ function addAiUser(text, hasImage = false) {
     document.getElementById('ai-messages').scrollTop = 99999;
 }
 
+function addAiChips(chips) {
+    const el = document.createElement('div');
+    el.className = 'flex flex-wrap gap-2 pl-9';
+    el.innerHTML = chips.map(c =>
+        `<button onclick="aiQuickSend('${c}')" class="text-[11px] font-bold px-3 py-1.5 rounded-full border border-orange-200 text-orange-600 bg-orange-50 hover:bg-orange-100 active:scale-95 transition-all">${c}</button>`
+    ).join('');
+    document.getElementById('ai-messages').appendChild(el);
+    document.getElementById('ai-messages').scrollTop = 99999;
+}
+
+function aiQuickSend(text) {
+    document.querySelectorAll('#ai-messages .flex.flex-wrap').forEach(e => e.remove());
+    document.getElementById('ai-input').value = text;
+    sendAiMsg();
+}
+
 async function sendAiMsg() {
     const input = document.getElementById('ai-input');
     const text = input.value.trim();
@@ -1280,6 +1299,7 @@ async function sendAiMsg() {
             body: JSON.stringify({ model, messages: msgs, max_tokens: 250, temperature: 0.7 })
         });
         const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || `Erreur ${res.status}`);
         const reply = data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu répondre.";
 
         // On stocke la version texte dans l'historique
@@ -1297,7 +1317,7 @@ async function sendAiMsg() {
 
     } catch(e) {
         typing.remove();
-        addAiBot("Erreur de connexion Groq. Vérifiez votre clé dans Réglages.");
+        addAiBot(`⚠️ ${e.message || "Erreur de connexion à l'IA. Vérifiez votre connexion."}`);
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-paper-plane text-xs"></i>';
@@ -1332,7 +1352,7 @@ async function captureFace() {
         });
         const data = await res.json();
         if (data.success) {
-            alert("Félicitations ! Votre Face ID est maintenant actif sur JEL DEM.");
+            alert("Félicitations ! Votre Face ID est maintenant actif sur HYFLEX.");
             currentUser.face_id = "OUI";
             localStorage.setItem('jeldem_session', JSON.stringify(currentUser));
             showDashboard();
