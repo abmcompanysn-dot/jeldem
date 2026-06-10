@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="/config.js" onerror="void(0)"></script>
+    <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js" onerror="void(0)"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1a1a1a; }
         .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
@@ -430,7 +431,39 @@
             <!-- Liste produits -->
             <div>
                 <h4 class="font-bold text-xs text-gray-500 uppercase tracking-widest px-1 mb-3">Catalogue actuel</h4>
-                <div id="mgr-products-list" class="space-y-2 mb-24"></div>
+                <div id="mgr-products-list" class="space-y-2"></div>
+            </div>
+
+            <!-- Gestion des rôles -->
+            <div class="glass rounded-3xl p-5 mb-24">
+                <h4 class="font-bold text-sm text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-user-shield text-orange-500"></i> Gestion des rôles
+                </h4>
+                <!-- Recherche -->
+                <div class="flex gap-2 mb-3">
+                    <input id="role-search-phone" type="tel" inputmode="numeric" placeholder="Téléphone du client"
+                        class="flex-1 bg-gray-100 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                        onkeydown="if(event.key==='Enter') searchUserForRole()">
+                    <button onclick="searchUserForRole()" class="btn-orange px-4 py-2 rounded-xl font-black text-sm"><i class="fas fa-search"></i></button>
+                </div>
+                <!-- Résultat + boutons -->
+                <div id="role-search-result" class="hidden bg-orange-50 border border-orange-100 rounded-2xl p-4 space-y-3 mb-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-bold text-sm text-gray-800" id="role-user-name">—</p>
+                            <p class="text-[10px] text-gray-400" id="role-user-phone">—</p>
+                        </div>
+                        <span id="role-current-badge" class="text-[10px] font-black px-3 py-1 rounded-full bg-orange-100 text-orange-600">—</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Attribuer un rôle :</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="applyRoleChange('Client')" class="py-2.5 rounded-xl text-xs font-black bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95 transition-all">Client</button>
+                        <button onclick="applyRoleChange('Manager')" class="py-2.5 rounded-xl text-xs font-black bg-blue-100 text-blue-700 hover:bg-blue-200 active:scale-95 transition-all">Manager</button>
+                        <button onclick="applyRoleChange('Admin')" class="py-2.5 rounded-xl text-xs font-black bg-orange-100 text-orange-700 hover:bg-orange-200 active:scale-95 transition-all">Admin</button>
+                    </div>
+                </div>
+                <!-- Liste utilisateurs avec rôles -->
+                <div id="mgr-users-roles" class="space-y-2"></div>
             </div>
         </div>
 
@@ -1100,29 +1133,45 @@ function closeFaceModal() {
 let barcodeStream = null;
 let barcodeDetector = null;
 let barcodeScanLoop = null;
-let pendingBarcode = null; // produit en attente de confirmation
+let pendingBarcode = null;
+let zxingReader = null;
 
 async function openBarcodeScanner() {
     document.getElementById('barcode-modal').classList.remove('hidden');
     document.getElementById('barcode-result').classList.add('hidden');
     document.getElementById('barcode-confirm-btn').classList.add('hidden');
     document.getElementById('barcode-manual-input').value = '';
+    document.getElementById('barcode-cam-wrap').classList.remove('hidden');
     pendingBarcode = null;
 
-    // Tenter d'utiliser BarcodeDetector (Chrome/Android)
+    // 1. BarcodeDetector natif (Chrome/Android)
     if ('BarcodeDetector' in window) {
         try {
             barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'qr_code', 'upc_a', 'upc_e', 'code_39'] });
             barcodeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
             document.getElementById('barcode-video').srcObject = barcodeStream;
+            document.getElementById('barcode-scan-status').innerText = 'Pointez vers le code barre';
             startBarcodeScanLoop();
-        } catch(e) {
-            document.getElementById('barcode-cam-wrap').classList.add('hidden');
-        }
-    } else {
-        document.getElementById('barcode-cam-wrap').classList.add('hidden');
-        document.getElementById('barcode-scan-status').innerText = 'BarcodeDetector non disponible — saisie manuelle';
+            return;
+        } catch(e) { /* fallthrough */ }
     }
+
+    // 2. ZXing cross-browser (iOS, Firefox, desktop)
+    if (typeof ZXing !== 'undefined') {
+        try {
+            zxingReader = new ZXing.BrowserMultiFormatReader();
+            document.getElementById('barcode-scan-status').innerText = 'Démarrage caméra…';
+            await zxingReader.decodeFromVideoDevice(null, 'barcode-video', (result, err) => {
+                if (result && !pendingBarcode) processBarcode(result.getText());
+            });
+            document.getElementById('barcode-scan-status').innerText = 'Pointez vers le code barre';
+            return;
+        } catch(e) { /* fallthrough */ }
+    }
+
+    // 3. Saisie manuelle uniquement
+    document.getElementById('barcode-cam-wrap').classList.add('hidden');
+    document.getElementById('barcode-scan-status').innerText = 'Caméra non disponible — saisie manuelle';
 }
 
 function startBarcodeScanLoop() {
@@ -1141,6 +1190,14 @@ function startBarcodeScanLoop() {
 
 async function processBarcode(code) {
     if (!code) return;
+
+    // Mode manager : copier le code dans le champ produit
+    if (window._mgrBarcodeMode) {
+        document.getElementById('mgr-prod-barcode').value = code;
+        closeBarcodeScanner();
+        return;
+    }
+
     document.getElementById('barcode-scan-status').innerText = `Code : ${code} — recherche...`;
 
     try {
@@ -1183,14 +1240,13 @@ function confirmBarcodePurchase() {
 
 function closeBarcodeScanner() {
     clearInterval(barcodeScanLoop);
-    if (barcodeStream) {
-        barcodeStream.getTracks().forEach(t => t.stop());
-        barcodeStream = null;
-    }
+    if (barcodeStream) { barcodeStream.getTracks().forEach(t => t.stop()); barcodeStream = null; }
+    if (zxingReader) { try { zxingReader.reset(); } catch(e){} zxingReader = null; }
     document.getElementById('barcode-modal').classList.add('hidden');
     document.getElementById('barcode-cam-wrap').classList.remove('hidden');
     document.getElementById('barcode-scan-status').innerText = 'Pointez vers le code barre';
     pendingBarcode = null;
+    window._mgrBarcodeMode = false;
 }
 
 // ====================================================
@@ -1278,9 +1334,11 @@ async function loadManagerData() {
         const data = await res.json();
         if (!data.success) return;
 
+        window._mgrData = data;
         document.getElementById('mgr-count-products').innerText = data.products?.length ?? '—';
         document.getElementById('mgr-count-users').innerText = data.users?.length ?? '—';
         document.getElementById('mgr-count-trans').innerText = data.recentTransactions?.length ?? '—';
+        renderUsersRoles();
 
         // Dernières ventes
         const transEl = document.getElementById('mgr-transactions');
@@ -1306,6 +1364,80 @@ async function loadManagerData() {
             </div>`).join('') || '<p class="text-xs text-gray-300 text-center py-3">Aucun produit</p>';
 
     } catch(e) { /* silencieux */ }
+}
+
+// ====================================================
+// GESTION DES RÔLES
+// ====================================================
+let roleTargetPhone = null;
+
+function searchUserForRole() {
+    const q = document.getElementById('role-search-phone').value.trim();
+    if (!q) return;
+    const user = window._mgrData?.users?.find(u =>
+        u.phone === q || u.phone.endsWith(q) || q.endsWith(u.phone)
+    );
+    if (user) showRoleResult(user);
+    else showToast('Utilisateur non trouvé', 'error');
+}
+
+function showRoleResult(user) {
+    roleTargetPhone = user.phone;
+    document.getElementById('role-user-name').innerText = user.name;
+    document.getElementById('role-user-phone').innerText = user.phone;
+    document.getElementById('role-current-badge').innerText = user.role || 'Client';
+    document.getElementById('role-search-phone').value = user.phone;
+    document.getElementById('role-search-result').classList.remove('hidden');
+}
+
+function pickRoleUser(phone) {
+    const user = window._mgrData?.users?.find(u => u.phone === phone);
+    if (user) showRoleResult(user);
+}
+
+async function applyRoleChange(newRole) {
+    if (!roleTargetPhone) return;
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'setUserRole', payload: { adminPhone: currentUser.phone, targetPhone: roleTargetPhone, role: newRole } }),
+            redirect: 'follow'
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`✓ ${data.name} → ${data.role}`, 'success');
+            document.getElementById('role-current-badge').innerText = data.role;
+            if (window._mgrData?.users) {
+                const u = window._mgrData.users.find(u => u.phone === roleTargetPhone);
+                if (u) u.role = data.role;
+                renderUsersRoles();
+            }
+        } else {
+            showToast(data.message || 'Non autorisé', 'error');
+        }
+    } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+function renderUsersRoles() {
+    const el = document.getElementById('mgr-users-roles');
+    if (!el || !window._mgrData?.users?.length) return;
+    el.innerHTML = window._mgrData.users.map(u => {
+        const role = u.role || 'Client';
+        const badge = role === 'Admin'
+            ? 'bg-orange-100 text-orange-600'
+            : role === 'Manager'
+            ? 'bg-blue-100 text-blue-700'
+            : 'bg-gray-100 text-gray-500';
+        return `<div class="bg-white rounded-xl px-3 py-2.5 flex items-center gap-3 border border-gray-100 shadow-sm">
+            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">${(u.name||'?')[0].toUpperCase()}</div>
+            <div class="flex-1 min-w-0">
+                <p class="font-bold text-xs text-gray-800 truncate">${u.name}</p>
+                <p class="text-[10px] text-gray-400">${u.phone}</p>
+            </div>
+            <span class="text-[10px] font-black px-2 py-0.5 rounded-full ${badge} flex-shrink-0">${role}</span>
+            <button onclick="pickRoleUser('${u.phone}')" class="w-6 h-6 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 flex-shrink-0"><i class="fas fa-pen text-[9px]"></i></button>
+        </div>`;
+    }).join('');
 }
 
 function showToast(msg, type = 'info') {
