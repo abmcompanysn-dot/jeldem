@@ -2,7 +2,7 @@
   "name": "JEL DEM — Pick & Go",
   "short_name": "JEL DEM",
   "description": "Votre porte-monnaie intelligent Pick & Go",
-  "start_url": "/client",
+  "start_url": "https://jeldem.abmcy.com/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
