@@ -212,6 +212,13 @@
                 </button>
             </div>
 
+            <!-- Bouton scan code barre -->
+            <button onclick="openBarcodeScanner()"
+                class="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl border-2 border-dashed border-orange-300 text-orange-500 font-black text-sm hover:bg-orange-50 active:scale-95 transition-all mb-4">
+                <i class="fas fa-barcode text-lg"></i>
+                Scanner un code barre — achat immédiat
+            </button>
+
             <!-- Flux détection produits en temps réel -->
             <div id="detection-feed" class="hidden rounded-2xl border border-orange-200 bg-orange-50 p-4">
                 <div class="flex items-center gap-2 mb-2">
@@ -347,6 +354,86 @@
             <button onclick="logout()" class="w-full text-red-500 font-bold text-xs uppercase tracking-widest pt-4">Se déconnecter</button>
         </div>
 
+        <!-- ONGLET 6: ESPACE MANAGER -->
+        <div id="tab-manager" class="tab-content hidden space-y-4">
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm" style="background:linear-gradient(135deg,#f97316,#fbbf24)">
+                        <i class="fas fa-store-alt text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-gray-900">Espace Manager</h3>
+                        <p class="text-[10px] text-gray-400" id="manager-role-badge">Gérant HYFLEX</p>
+                    </div>
+                </div>
+                <button onclick="loadManagerData()" class="text-[10px] text-orange-500 font-bold"><i class="fas fa-sync-alt mr-1"></i>Actualiser</button>
+            </div>
+
+            <!-- Ajouter un produit -->
+            <div class="glass rounded-3xl p-5">
+                <h4 class="font-bold text-sm text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-plus-circle text-orange-500"></i> Ajouter un produit</h4>
+                <div class="space-y-3">
+                    <input id="mgr-prod-name" type="text" placeholder="Nom du produit *" class="w-full bg-gray-100 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input id="mgr-prod-price" type="number" placeholder="Prix (FCFA) *" class="bg-gray-100 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500">
+                        <input id="mgr-prod-stock" type="number" placeholder="Quantité *" class="bg-gray-100 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <input id="mgr-prod-rayon" type="text" placeholder="Rayon / Catégorie" class="w-full bg-gray-100 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500">
+
+                    <!-- Code barre -->
+                    <div class="flex gap-2">
+                        <input id="mgr-prod-barcode" type="text" inputmode="numeric" placeholder="Code barre (EAN-13…)" class="flex-1 bg-gray-100 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500">
+                        <button onclick="openMgrBarcodeScanner()" class="bg-orange-100 text-orange-600 px-3 rounded-xl font-bold text-xs"><i class="fas fa-barcode"></i></button>
+                    </div>
+
+                    <!-- Photo produit -->
+                    <div id="mgr-photo-preview" class="hidden relative w-24 h-24">
+                        <img id="mgr-photo-thumb" class="w-full h-full object-cover rounded-xl border-2 border-orange-300">
+                        <button onclick="clearMgrPhoto()" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center">✕</button>
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-3 hover:border-orange-300 transition-all">
+                        <i class="fas fa-camera text-gray-400"></i>
+                        <span class="text-xs text-gray-500 font-bold">Prendre / Choisir une photo du produit</span>
+                        <input type="file" id="mgr-photo-input" accept="image/*" capture="environment" class="hidden" onchange="previewMgrPhoto(event)">
+                    </label>
+
+                    <button onclick="submitManagerProduct()"
+                        class="w-full py-3 rounded-2xl btn-orange font-black text-sm uppercase tracking-wide">
+                        <i class="fas fa-plus mr-2"></i>Ajouter au catalogue
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats rapides -->
+            <div class="grid grid-cols-3 gap-3" id="mgr-stats">
+                <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center">
+                    <p class="text-xl font-black text-orange-500" id="mgr-count-products">—</p>
+                    <p class="text-[9px] text-gray-400 uppercase font-bold">Produits</p>
+                </div>
+                <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center">
+                    <p class="text-xl font-black text-green-600" id="mgr-count-users">—</p>
+                    <p class="text-[9px] text-gray-400 uppercase font-bold">Clients</p>
+                </div>
+                <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center">
+                    <p class="text-xl font-black text-blue-500" id="mgr-count-trans">—</p>
+                    <p class="text-[9px] text-gray-400 uppercase font-bold">Ventes récentes</p>
+                </div>
+            </div>
+
+            <!-- Dernières transactions -->
+            <div>
+                <h4 class="font-bold text-xs text-gray-500 uppercase tracking-widest px-1 mb-3">Dernières ventes</h4>
+                <div id="mgr-transactions" class="space-y-2"></div>
+            </div>
+
+            <!-- Liste produits -->
+            <div>
+                <h4 class="font-bold text-xs text-gray-500 uppercase tracking-widest px-1 mb-3">Catalogue actuel</h4>
+                <div id="mgr-products-list" class="space-y-2 mb-24"></div>
+            </div>
+        </div>
+
         <!-- ONGLET 5: CHAT IA JEL DEM -->
         <div id="tab-chat" class="tab-content hidden">
             <!-- Header -->
@@ -414,6 +501,49 @@
         </div>
     </div>
 
+    <!-- Modal Scanner Code Barre -->
+    <div id="barcode-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="glass w-full max-w-sm rounded-3xl p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-black text-gray-900">Scanner un produit</h3>
+                <button onclick="closeBarcodeScanner()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-black">✕</button>
+            </div>
+
+            <!-- Viewfinder caméra -->
+            <div id="barcode-cam-wrap" class="relative rounded-2xl overflow-hidden bg-black aspect-video">
+                <video id="barcode-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                <!-- Ligne de scan animée -->
+                <div class="absolute inset-x-8 top-1/2 -translate-y-1/2 h-0.5 bg-orange-400 opacity-80" style="animation:scanline 1.5s ease-in-out infinite alternate"></div>
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="w-48 h-28 border-2 border-orange-400 rounded-xl opacity-70"></div>
+                </div>
+                <p id="barcode-scan-status" class="absolute bottom-2 inset-x-0 text-center text-[10px] font-bold text-white/80">Pointez vers le code barre</p>
+            </div>
+            <style>@keyframes scanline{0%{top:30%}100%{top:70%}}</style>
+
+            <!-- Résultat scan -->
+            <div id="barcode-result" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Produit détecté</p>
+                <p class="font-black text-gray-900 text-sm" id="barcode-prod-name">—</p>
+                <p class="text-orange-600 font-black text-lg" id="barcode-prod-price">—</p>
+                <p class="text-[10px] text-gray-400 mt-1">Solde après : <span id="barcode-after-balance" class="font-bold text-gray-700">—</span></p>
+            </div>
+
+            <!-- Saisie manuelle -->
+            <div class="flex gap-2">
+                <input id="barcode-manual-input" type="text" inputmode="numeric" placeholder="Entrez le code barre manuellement"
+                    class="flex-1 bg-gray-100 text-sm p-3 rounded-xl outline-none focus:ring-2 focus:ring-orange-500"
+                    onkeydown="if(event.key==='Enter') processBarcode(this.value.trim())">
+                <button onclick="processBarcode(document.getElementById('barcode-manual-input').value.trim())"
+                    class="btn-orange px-4 py-2 rounded-xl font-black text-sm">OK</button>
+            </div>
+
+            <button id="barcode-confirm-btn" onclick="confirmBarcodePurchase()" class="hidden w-full py-3 rounded-2xl bg-green-500 text-white font-black text-sm uppercase rounded-2xl">
+                ✓ Achat effectué — Fermer
+            </button>
+        </div>
+    </div>
+
     <!-- Modal Face ID (Caché par défaut) -->
     <div id="face-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
         <div class="glass w-full max-w-sm rounded-3xl p-6 text-center space-y-4">
@@ -436,6 +566,7 @@
         <button onclick="switchTab('tab-factures')" class="nav-btn p-2.5 rounded-full text-gray-400"><i class="fas fa-history text-lg"></i></button>
         <button onclick="switchTab('tab-paiement')" class="nav-btn p-2.5 rounded-full text-gray-400"><i class="fas fa-wallet text-lg"></i></button>
         <button onclick="switchTab('tab-chat')" class="nav-btn p-2.5 rounded-full text-gray-400"><i class="fas fa-robot text-lg"></i></button>
+        <button id="nav-manager-btn" onclick="switchTab('tab-manager')" class="nav-btn hidden p-2.5 rounded-full text-gray-400" title="Manager"><i class="fas fa-store-alt text-lg"></i></button>
         <button onclick="switchTab('tab-settings')" class="nav-btn p-2.5 rounded-full text-gray-400"><i class="fas fa-user-cog text-lg"></i></button>
     </nav>
 
@@ -508,7 +639,7 @@ function closeOnboarding() {
 const CONFIG = {
     APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxxSOZyptRBlGr0svsXlWzjANkMK8RRz03gVizG56nS6KsIfyVW0ghuyxonCY7ebqYGjQ/exec",
     GROQ_API_KEY: "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",
-    GROQ_MODEL: "llama3-8b-8192",
+    GROQ_MODEL: "llama-3.3-70b-versatile",
     GROQ_VISION_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct",
     GROQ_API_URL: "https://api.groq.com/openai/v1/chat/completions",
     APP_NAME: "HYFLEX"
@@ -573,6 +704,7 @@ function switchTab(tabId) {
 
     if (tabId === 'tab-factures') { loadSuggestions(); loadCatalog(); }
     if (tabId === 'tab-chat' && aiHistory.length === 0) initAiChat();
+    if (tabId === 'tab-manager') loadManagerData();
 }
 
 // ========================================
@@ -859,6 +991,16 @@ function showDashboard() {
     // Démarrer le polling RFID (toutes les 3s)
     startRfidPolling();
 
+    // Afficher le bouton Manager si rôle approprié
+    const isManager = ['Manager', 'Admin'].includes(currentUser.role);
+    const mgrBtn = document.getElementById('nav-manager-btn');
+    if (mgrBtn) mgrBtn.classList.toggle('hidden', !isManager);
+    if (isManager) {
+        const badge = document.getElementById('manager-role-badge');
+        if (badge) badge.innerText = currentUser.role + ' HYFLEX';
+        loadManagerData();
+    }
+
     updateUI();
     switchTab('tab-id');
 
@@ -950,6 +1092,220 @@ function closeFaceModal() {
         faceStream.getTracks().forEach(track => track.stop());
     }
     document.getElementById('face-modal').classList.add('hidden');
+}
+
+// ====================================================
+// SCANNER CODE BARRE
+// ====================================================
+let barcodeStream = null;
+let barcodeDetector = null;
+let barcodeScanLoop = null;
+let pendingBarcode = null; // produit en attente de confirmation
+
+async function openBarcodeScanner() {
+    document.getElementById('barcode-modal').classList.remove('hidden');
+    document.getElementById('barcode-result').classList.add('hidden');
+    document.getElementById('barcode-confirm-btn').classList.add('hidden');
+    document.getElementById('barcode-manual-input').value = '';
+    pendingBarcode = null;
+
+    // Tenter d'utiliser BarcodeDetector (Chrome/Android)
+    if ('BarcodeDetector' in window) {
+        try {
+            barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'qr_code', 'upc_a', 'upc_e', 'code_39'] });
+            barcodeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            document.getElementById('barcode-video').srcObject = barcodeStream;
+            startBarcodeScanLoop();
+        } catch(e) {
+            document.getElementById('barcode-cam-wrap').classList.add('hidden');
+        }
+    } else {
+        document.getElementById('barcode-cam-wrap').classList.add('hidden');
+        document.getElementById('barcode-scan-status').innerText = 'BarcodeDetector non disponible — saisie manuelle';
+    }
+}
+
+function startBarcodeScanLoop() {
+    const video = document.getElementById('barcode-video');
+    barcodeScanLoop = setInterval(async () => {
+        if (!barcodeDetector || video.readyState < 2) return;
+        try {
+            const codes = await barcodeDetector.detect(video);
+            if (codes.length > 0) {
+                clearInterval(barcodeScanLoop);
+                processBarcode(codes[0].rawValue);
+            }
+        } catch(e) {}
+    }, 400);
+}
+
+async function processBarcode(code) {
+    if (!code) return;
+    document.getElementById('barcode-scan-status').innerText = `Code : ${code} — recherche...`;
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'scanBarcode', payload: { phone: currentUser.phone, barcode: code } }),
+            redirect: 'follow'
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            pendingBarcode = data;
+            const resultEl = document.getElementById('barcode-result');
+            document.getElementById('barcode-prod-name').innerText = data.product.name;
+            document.getElementById('barcode-prod-price').innerText = data.product.price.toLocaleString() + ' FCFA';
+            document.getElementById('barcode-after-balance').innerText = data.newBalance.toLocaleString() + ' FCFA';
+            resultEl.classList.remove('hidden');
+            document.getElementById('barcode-confirm-btn').classList.remove('hidden');
+            // L'achat est déjà effectué côté serveur, on met à jour le solde local
+            currentUser.balance = data.newBalance;
+            localStorage.setItem('jeldem_session', JSON.stringify(currentUser));
+            renderBalanceOnly();
+            updateQrBalanceMini();
+        } else if (data.error === 'insufficient_balance') {
+            showToast(`Solde insuffisant — ${data.product?.name || 'produit'} coûte ${data.product?.price?.toLocaleString() || '?'} FCFA`, 'error');
+        } else {
+            showToast(data.message || 'Code barre non reconnu', 'error');
+            document.getElementById('barcode-scan-status').innerText = 'Code non reconnu — réessayez';
+        }
+    } catch(e) {
+        showToast('Erreur de connexion', 'error');
+    }
+}
+
+function confirmBarcodePurchase() {
+    if (!pendingBarcode) return;
+    showToast(`✓ Achat confirmé : ${pendingBarcode.product.name} — ${pendingBarcode.product.price.toLocaleString()} FCFA`, 'success');
+    closeBarcodeScanner();
+}
+
+function closeBarcodeScanner() {
+    clearInterval(barcodeScanLoop);
+    if (barcodeStream) {
+        barcodeStream.getTracks().forEach(t => t.stop());
+        barcodeStream = null;
+    }
+    document.getElementById('barcode-modal').classList.add('hidden');
+    document.getElementById('barcode-cam-wrap').classList.remove('hidden');
+    document.getElementById('barcode-scan-status').innerText = 'Pointez vers le code barre';
+    pendingBarcode = null;
+}
+
+// ====================================================
+// ESPACE MANAGER
+// ====================================================
+let mgrPhotoBase64 = null;
+
+function previewMgrPhoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        mgrPhotoBase64 = e.target.result.split(',')[1];
+        document.getElementById('mgr-photo-thumb').src = e.target.result;
+        document.getElementById('mgr-photo-preview').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+}
+
+function clearMgrPhoto() {
+    mgrPhotoBase64 = null;
+    document.getElementById('mgr-photo-preview').classList.add('hidden');
+}
+
+function openMgrBarcodeScanner() {
+    // Réutilise le scanner existant, mais remplit le champ manager
+    openBarcodeScanner();
+    // Override: au lieu de déclencher un achat, copier le code dans le champ manager
+    window._mgrBarcodeMode = true;
+}
+
+async function submitManagerProduct() {
+    const name = document.getElementById('mgr-prod-name').value.trim();
+    const price = parseInt(document.getElementById('mgr-prod-price').value);
+    const stock = parseInt(document.getElementById('mgr-prod-stock').value);
+    const rayon = document.getElementById('mgr-prod-rayon').value.trim();
+    const barcode = document.getElementById('mgr-prod-barcode').value.trim();
+
+    if (!name || !price || !stock) {
+        showToast('Nom, prix et quantité requis', 'error');
+        return;
+    }
+
+    showToast('Ajout du produit...', 'info');
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'addProduct',
+                payload: {
+                    name, price, stock,
+                    shelf: rayon || 'Rayon A',
+                    barcode,
+                    image: mgrPhotoBase64 || null
+                }
+            }),
+            redirect: 'follow'
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`✓ "${name}" ajouté au catalogue !`, 'success');
+            // Reset form
+            ['mgr-prod-name','mgr-prod-price','mgr-prod-stock','mgr-prod-rayon','mgr-prod-barcode'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            clearMgrPhoto();
+            loadManagerData();
+        } else {
+            showToast('Erreur : ' + (data.message || 'Réessayez'), 'error');
+        }
+    } catch(e) {
+        showToast('Erreur de connexion', 'error');
+    }
+}
+
+async function loadManagerData() {
+    if (!currentUser || !['Manager','Admin'].includes(currentUser.role)) return;
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'getManagerData', payload: { phone: currentUser.phone } }),
+            redirect: 'follow'
+        });
+        const data = await res.json();
+        if (!data.success) return;
+
+        document.getElementById('mgr-count-products').innerText = data.products?.length ?? '—';
+        document.getElementById('mgr-count-users').innerText = data.users?.length ?? '—';
+        document.getElementById('mgr-count-trans').innerText = data.recentTransactions?.length ?? '—';
+
+        // Dernières ventes
+        const transEl = document.getElementById('mgr-transactions');
+        transEl.innerHTML = (data.recentTransactions || []).slice(0, 8).map(t => `
+            <div class="bg-white rounded-xl px-4 py-2.5 flex justify-between items-center border border-gray-100 shadow-sm">
+                <div>
+                    <p class="text-xs font-bold text-gray-800">${t.product || '—'}</p>
+                    <p class="text-[10px] text-gray-400">${t.client || '—'} · ${t.date ? new Date(t.date).toLocaleDateString('fr-FR') : ''}</p>
+                </div>
+                <p class="text-orange-600 font-black text-sm">${(t.amount || 0).toLocaleString()} F</p>
+            </div>`).join('') || '<p class="text-xs text-gray-300 text-center py-3">Aucune vente récente</p>';
+
+        // Catalogue
+        const prodEl = document.getElementById('mgr-products-list');
+        prodEl.innerHTML = (data.products || []).map(p => `
+            <div class="bg-white rounded-xl px-4 py-3 flex items-center gap-3 border border-gray-100 shadow-sm">
+                ${p.imageUrl ? `<img src="${p.imageUrl}" class="w-10 h-10 rounded-xl object-cover flex-shrink-0 bg-gray-100">` : `<div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0"><i class="fas fa-box text-orange-300 text-sm"></i></div>`}
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold text-xs text-gray-800 truncate">${p.name}</p>
+                    <p class="text-[10px] text-gray-400">${p.rayon || ''} · Stock: ${p.stock} · ${p.barcode ? '🔖 ' + p.barcode : 'Pas de code barre'}</p>
+                </div>
+                <p class="font-black text-orange-600 text-sm flex-shrink-0">${(p.price || 0).toLocaleString()} F</p>
+            </div>`).join('') || '<p class="text-xs text-gray-300 text-center py-3">Aucun produit</p>';
+
+    } catch(e) { /* silencieux */ }
 }
 
 function showToast(msg, type = 'info') {
@@ -1370,7 +1726,7 @@ async function sendAiMsg() {
         const res = await fetch(CONFIG.GROQ_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CONFIG.GROQ_API_KEY}` },
-            body: JSON.stringify({ model, messages: msgs, max_tokens: 250, temperature: 0.7 })
+            body: JSON.stringify({ model, messages: msgs, max_tokens: 400, temperature: 0.7 })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error?.message || `Erreur ${res.status}`);
